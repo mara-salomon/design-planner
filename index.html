@@ -1638,16 +1638,9 @@ async function loadFromGitHub() {
     const remoteProjects = Array.isArray(json.projects) ? json.projects : [];
     const remoteDayNotes = (json.dayNotes && typeof json.dayNotes === 'object') ? json.dayNotes : {};
 
-    // Always use live GitHub data as the source of truth for everyone.
-    // For the editor, merge so any locally-unsaved changes aren't lost.
-    if (!IS_READONLY) {
-      const localIds     = new Set(remoteEvents.map(e => e.id));
-      const localProjIds = new Set(remoteProjects.map(p => p.id));
-      state.events.forEach(e   => { if (!localIds.has(e.id))         remoteEvents.push(e); });
-      state.projects.forEach(p => { if (!localProjIds.has(p.id))     remoteProjects.push(p); });
-      Object.entries(state.dayNotes).forEach(([k, v]) => { if (!remoteDayNotes[k]) remoteDayNotes[k] = v; });
-    }
-
+    // GitHub is always the source of truth — use remote data as-is.
+    // beforeunload pushes any pending changes before the page closes,
+    // so remote is always current by the time any browser loads.
     state.events   = remoteEvents;
     state.projects = remoteProjects;
     state.dayNotes = remoteDayNotes;
