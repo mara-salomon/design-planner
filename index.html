@@ -2135,8 +2135,12 @@ if (LOCKED_VIEW) {
 }
 
 if (cfg.owner && cfg.repo) {
-  setSyncStatus('ok', `${cfg.owner}/${cfg.repo}`);
-  loadFromGitHub();
+  const hasLocalData = state.events.length > 0 || state.projects.length > 0;
+  if (hasLocalData) {
+    setSyncStatus('ok', 'synced');
+  } else {
+    loadFromGitHub();
+  }
 } else {
   setSyncStatus('', 'not configured');
 }
