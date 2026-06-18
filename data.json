@@ -6,6 +6,27 @@
       "date": "2026-06-01",
       "projectId": "mqj2da8vlliq6q4s79",
       "order": 0
+    },
+    {
+      "id": "mqj67vq2p9us2yru0r",
+      "title": "[ADV Web] Ad-hoc Requests",
+      "date": "2026-06-01",
+      "projectId": "mqj2ke9metncs726ut7",
+      "order": 1
+    },
+    {
+      "id": "mqj682txpu7sl80f4xo",
+      "title": "[OMOTF] Infographic 1 - LI & IG",
+      "date": "2026-06-01",
+      "projectId": "mqj2kttl0yhx7uxdvszq",
+      "order": 2
+    },
+    {
+      "id": "mqj68bpx3pfjqi37ggz",
+      "title": "TechTarget Ghaleb Tile",
+      "date": "2026-06-01",
+      "projectId": "mqj2l7d4wx6t6fmis3",
+      "order": 3
     }
   ],
   "projects": [
