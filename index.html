@@ -1092,11 +1092,14 @@ function render() {
 
       cell.appendChild(headerDiv);
 
-      // Spacer reserves room for ribbons
-      if (numSlots > 0) {
+      // Spacer reserves room only for ribbons that actually cover this day
+      const dayIdx = week.findIndex(c => c.ds === ds);
+      const slotsOnDay = slotted.filter(s => s.startIdx <= dayIdx && s.endIdx >= dayIdx);
+      const numSlotsOnDay = slotsOnDay.length ? Math.max(...slotsOnDay.map(s => s.slot)) + 1 : 0;
+      if (numSlotsOnDay > 0) {
         const spacer = document.createElement('div');
         spacer.className = 'ribbon-spacer';
-        spacer.style.height = (numSlots * RIBBON_SLOT_H) + 'px';
+        spacer.style.height = (numSlotsOnDay * RIBBON_SLOT_H) + 'px';
         cell.appendChild(spacer);
       }
 
