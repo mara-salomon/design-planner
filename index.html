@@ -278,14 +278,14 @@
   .label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .label-row label { margin-bottom: 0; }
 
-  input[type=text], input[type=date], textarea, select {
+  input[type=text], input[type=date], input[type=password], textarea, select {
     width: 100%; padding: 8px 10px;
     border: 1px solid var(--border); border-radius: var(--radius);
     font-size: 0.875rem; font-family: inherit;
     color: var(--text); background: var(--bg);
     outline: none; transition: border-color .15s;
   }
-  input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
+  input[type=text]:focus, input[type=date]:focus, input[type=password]:focus, textarea:focus, select:focus {
     border-color: var(--accent);
   }
   textarea { resize: vertical; min-height: 70px; }
@@ -799,6 +799,11 @@
         Create one here
       </a> — only the <code>repo</code> scope is needed.
     </p>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="cfgPassword" placeholder="Enter password to enable editing" />
+      <div id="cfgPasswordError" style="display:none;color:#ef4444;font-size:0.8rem;margin-top:4px">Incorrect password.</div>
+    </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" id="settingsCancel">Cancel</button>
       <button class="btn btn-primary" id="settingsSave">Save</button>
@@ -839,9 +844,11 @@ let cfg = {
   repo:     localStorage.getItem('gh_repo')     || '',
   branch:   localStorage.getItem('gh_branch')   || 'main',
   token:    localStorage.getItem('gh_token')    || '',
+  password: '',
 };
 
-function canEdit() { return !!cfg.token && !IS_READONLY; }
+const EDIT_PASSWORD = 'GrowthIsGood';
+function canEdit() { return cfg.password === EDIT_PASSWORD && !IS_READONLY; }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
@@ -934,7 +941,7 @@ function moveEventToDate(id, targetDate) {
 }
 
 function attachDragSource(el, ev) {
-  if (IS_READONLY) return;
+  if (!canEdit()) return;
   el.draggable = true;
   el.addEventListener('dragstart', e => {
     drag.id = ev.id;
@@ -1061,7 +1068,7 @@ function render() {
       noteInput.placeholder = '';
       noteInput.maxLength = 60;
       noteInput.spellcheck = false;
-      if (IS_READONLY) { noteInput.readOnly = true; noteInput.style.cursor = 'default'; }
+      if (!canEdit()) { noteInput.readOnly = true; noteInput.style.cursor = 'default'; }
       noteInput.setAttribute('title', state.dayNotes[ds] || '');
       noteInput.style.color = isPast ? '#ccc' : 'var(--muted)';
       noteInput.addEventListener('blur', () => {
@@ -1260,7 +1267,7 @@ function populateProjectDropdown(selectedId) {
 }
 
 function openAddModal(ds) {
-  if (IS_READONLY) return;
+  if (!canEdit()) return;
   state.editingId = null;
   document.getElementById('modalTitle').textContent = 'Add event';
   document.getElementById('evTitle').value = '';
@@ -1274,7 +1281,7 @@ function openAddModal(ds) {
 }
 
 function openEditModal(id) {
-  if (IS_READONLY) return;
+  if (!canEdit()) return;
   const ev = state.events.find(e => e.id === id);
   if (!ev) return;
   state.editingId = id;
@@ -1721,18 +1728,28 @@ function openSettings() {
   document.getElementById('cfgRepo').value     = cfg.repo;
   document.getElementById('cfgBranch').value   = cfg.branch || 'main';
   document.getElementById('cfgToken').value    = cfg.token;
+  document.getElementById('cfgPassword').value = cfg.password;
+  document.getElementById('cfgPasswordError').style.display = 'none';
   document.getElementById('settingsOverlay').classList.add('open');
 }
 
 function saveSettings() {
+  const enteredPassword = document.getElementById('cfgPassword').value.trim();
+  if (enteredPassword !== EDIT_PASSWORD) {
+    document.getElementById('cfgPasswordError').style.display = 'block';
+    return;
+  }
+  document.getElementById('cfgPasswordError').style.display = 'none';
   cfg.owner    = document.getElementById('cfgOwner').value.trim();
   cfg.repo     = document.getElementById('cfgRepo').value.trim();
   cfg.branch   = document.getElementById('cfgBranch').value.trim() || 'main';
   cfg.token    = document.getElementById('cfgToken').value.trim();
-  localStorage.setItem('gh_owner',  cfg.owner);
-  localStorage.setItem('gh_repo',   cfg.repo);
-  localStorage.setItem('gh_branch', cfg.branch);
-  localStorage.setItem('gh_token',  cfg.token);
+  cfg.password = enteredPassword;
+  localStorage.setItem('gh_owner',    cfg.owner);
+  localStorage.setItem('gh_repo',     cfg.repo);
+  localStorage.setItem('gh_branch',   cfg.branch);
+  localStorage.setItem('gh_token',    cfg.token);
+  
   document.body.classList.toggle('readonly', !canEdit());
   document.getElementById('settingsOverlay').classList.remove('open');
   if (cfg.owner && cfg.repo) {
@@ -2071,6 +2088,7 @@ if (!cfg.owner && window.location.hostname.endsWith('.github.io')) {
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 initCustomColorControls();
+localStorage.removeItem("gh_password");
 if (!IS_READONLY) loadLocal();
 
 // Apply readonly mode — either forced via URL param or password not entered
