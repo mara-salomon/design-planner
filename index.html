@@ -1624,7 +1624,16 @@ function autoSaveLocal() {
   localStorage.setItem('planner_events',   JSON.stringify(state.events));
   localStorage.setItem('planner_projects', JSON.stringify(state.projects));
   localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
+  localStorage.setItem('planner_dirty',    'true');
   if (cfg.owner && cfg.repo) setSyncStatus('warn', 'unsaved changes');
+}
+
+function saveLocalClean() {
+  // Save to localStorage without marking dirty — used after sync or loading from GitHub
+  localStorage.setItem('planner_events',   JSON.stringify(state.events));
+  localStorage.setItem('planner_projects', JSON.stringify(state.projects));
+  localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
+  localStorage.setItem('planner_dirty',    'false');
 }
 
 function loadLocal() {
@@ -1667,7 +1676,7 @@ async function loadFromGitHub() {
     if (Array.isArray(json.projects)) state.projects = json.projects;
     if (json.dayNotes && typeof json.dayNotes === 'object') state.dayNotes = json.dayNotes;
     ensureOrders();
-    autoSaveLocal();
+    saveLocalClean();
     render();
     setSyncStatus('ok', 'synced');
   } catch(e) {
@@ -1722,6 +1731,7 @@ async function pushToGitHub() {
     }
 
     if (!putR.ok) { const e = await putR.json(); throw new Error(e.message || putR.status); }
+    saveLocalClean();
     setSyncStatus('ok', 'synced ✓');
   } catch(e) {
     setSyncStatus('err', 'sync failed');
@@ -2135,9 +2145,9 @@ if (LOCKED_VIEW) {
 }
 
 if (cfg.owner && cfg.repo) {
-  const hasLocalData = state.events.length > 0 || state.projects.length > 0;
-  if (hasLocalData) {
-    setSyncStatus('ok', 'synced');
+  const isDirty = localStorage.getItem('planner_dirty') === 'true';
+  if (isDirty) {
+    setSyncStatus('warn', 'unsaved changes');
   } else {
     loadFromGitHub();
   }
