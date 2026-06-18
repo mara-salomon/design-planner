@@ -1658,7 +1658,7 @@ async function loadFromGitHub() {
   if (!cfg.owner || !cfg.repo) return;
   setSyncStatus('busy', 'loading…');
   try {
-    const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json?ref=${cfg.branch}`;
+    const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json?ref=${cfg.branch}&_=${Date.now()}`;
     const headers = { 'Accept': 'application/vnd.github.v3+json' };
     if (cfg.token) headers['Authorization'] = `token ${cfg.token}`;
     const r = await fetch(apiUrl, { headers, cache: 'no-store' });
@@ -1680,9 +1680,11 @@ async function loadFromGitHub() {
     if (Array.isArray(json.projects))                       state.projects = json.projects;
     if (json.dayNotes && typeof json.dayNotes === 'object') state.dayNotes = json.dayNotes;
     ensureOrders();
-    localStorage.setItem('planner_events',   JSON.stringify(state.events));
-    localStorage.setItem('planner_projects', JSON.stringify(state.projects));
-    localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
+    if (!IS_READONLY) {
+      localStorage.setItem('planner_events',   JSON.stringify(state.events));
+      localStorage.setItem('planner_projects', JSON.stringify(state.projects));
+      localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
+    }
     render();
     setSyncStatus('ok', 'ready');
   } catch(e) {
