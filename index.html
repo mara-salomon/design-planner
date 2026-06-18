@@ -1658,23 +1658,27 @@ async function loadFromGitHub() {
   if (!cfg.owner || !cfg.repo) return;
   setSyncStatus('busy', 'loading…');
   try {
-    const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/data.json?_=${Date.now()}`;
-    const r = await fetch(url, { cache: 'no-store' });
+    const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json?ref=${cfg.branch}`;
+    const headers = { 'Accept': 'application/vnd.github.v3+json' };
+    if (cfg.token) headers['Authorization'] = `token ${cfg.token}`;
+    const r = await fetch(apiUrl, { headers, cache: 'no-store' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const json = await r.json();
+    const meta = await r.json();
+    const json = JSON.parse(decodeURIComponent(escape(atob(meta.content.replace(/\s/g, '')))));
 
-    // Never overwrite local data with empty remote — local changes may not have pushed yet
-    const remoteHasData = (Array.isArray(json.events)   && json.events.length > 0)
-                       || (Array.isArray(json.projects) && json.projects.length > 0);
-    const localHasData  = state.events.length > 0 || state.projects.length > 0;
-    if (!remoteHasData && localHasData) {
+    const localHasData = state.events.length > 0 || state.projects.length > 0;
+    if (localHasData) {
+      // Local data exists — this device is the editor. Keep local state as truth
+      // and push it to GitHub so remote catches up.
       setSyncStatus('ok', 'ready');
+      scheduleGitHubPush();
       return;
     }
 
-    if (Array.isArray(json.events))                          state.events   = json.events;
-    if (Array.isArray(json.projects))                        state.projects = json.projects;
-    if (json.dayNotes && typeof json.dayNotes === 'object')  state.dayNotes = json.dayNotes;
+    // Local is empty (new browser / new device) — bootstrap from GitHub
+    if (Array.isArray(json.events))                         state.events   = json.events;
+    if (Array.isArray(json.projects))                       state.projects = json.projects;
+    if (json.dayNotes && typeof json.dayNotes === 'object') state.dayNotes = json.dayNotes;
     ensureOrders();
     localStorage.setItem('planner_events',   JSON.stringify(state.events));
     localStorage.setItem('planner_projects', JSON.stringify(state.projects));
