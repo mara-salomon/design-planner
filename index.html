@@ -1638,20 +1638,19 @@ async function loadFromGitHub() {
     const remoteProjects = Array.isArray(json.projects) ? json.projects : [];
     const remoteDayNotes = (json.dayNotes && typeof json.dayNotes === 'object') ? json.dayNotes : {};
 
-    // GitHub is always the source of truth — use remote data as-is.
-    // beforeunload pushes any pending changes before the page closes,
-    // so remote is always current by the time any browser loads.
+    if (cfg.token) {
+      // Editor browser: local state is authoritative — never overwrite it from remote.
+      // Just push whatever is local so GitHub stays in sync.
+      setSyncStatus('ok', 'ready');
+      scheduleGitHubPush();
+      return;
+    }
+
+    // Viewer browser (no token): use GitHub as source of truth.
     state.events   = remoteEvents;
     state.projects = remoteProjects;
     state.dayNotes = remoteDayNotes;
-
     ensureOrders();
-    if (!IS_READONLY) {
-      localStorage.setItem('planner_events',   JSON.stringify(state.events));
-      localStorage.setItem('planner_projects', JSON.stringify(state.projects));
-      localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
-      scheduleGitHubPush();
-    }
     render();
     setSyncStatus('ok', 'ready');
   } catch(e) {
