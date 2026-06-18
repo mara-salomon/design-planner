@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Design Planner</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -456,15 +459,6 @@
   /* ── Readonly mode ── */
   .readonly .edit-only { display: none !important; }
 
-  /* ── Share modal ── */
-  .share-option {
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    padding: 14px 0; border-bottom: 1px solid var(--border);
-  }
-  .share-option:last-child { border-bottom: none; padding-bottom: 0; }
-  .share-option-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 3px; }
-  .share-option-desc  { font-size: 0.78rem; color: var(--muted); }
-  .share-no-sync { font-size: 0.875rem; color: var(--muted); line-height: 1.5; padding: 8px 0; }
 
   /* ── View toggle ── */
   .view-toggle {
@@ -637,8 +631,7 @@
     <button class="btn edit-only" id="projectsBtn">Projects</button>
   </div>
   <div class="header-right">
-    <button class="btn edit-only" id="shareBtn">↗ Share</button>
-    <span class="sync-status edit-only" id="syncStatus">
+<span class="sync-status edit-only" id="syncStatus">
       <span class="sync-dot" id="syncDot"></span>
       <span id="syncText">not configured</span>
     </span>
@@ -774,43 +767,6 @@
   </div>
 </div>
 
-<!-- ── Share modal ── -->
-<div class="overlay" id="shareOverlay">
-  <div class="modal" style="max-width:440px">
-    <div class="modal-header">
-      <span class="modal-title">Share</span>
-      <button class="modal-close" id="shareModalClose">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="share-no-sync" id="shareNoSync" style="display:none">
-        Configure GitHub sync first (⚙ Settings) so others can load your data.
-      </div>
-      <div id="shareOptions">
-        <div class="share-option">
-          <div>
-            <div class="share-option-title">Calendar View</div>
-            <div class="share-option-desc">Read-only · Calendar view only</div>
-          </div>
-          <button class="btn btn-sm" id="shareCalBtn">Copy link</button>
-        </div>
-        <div class="share-option">
-          <div>
-            <div class="share-option-title">List View</div>
-            <div class="share-option-desc">Read-only · List view only</div>
-          </div>
-          <button class="btn btn-sm" id="shareListBtn">Copy link</button>
-        </div>
-        <div class="share-option">
-          <div>
-            <div class="share-option-title">Full Planner</div>
-            <div class="share-option-desc">Edit mode · Both views</div>
-          </div>
-          <button class="btn btn-sm btn-primary" id="shareFullBtn">Copy link</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ── Settings panel ── -->
 <div class="settings-overlay" id="settingsOverlay">
@@ -1671,29 +1627,27 @@ async function loadFromGitHub() {
     const remoteProjects = Array.isArray(json.projects) ? json.projects : [];
     const remoteDayNotes = (json.dayNotes && typeof json.dayNotes === 'object') ? json.dayNotes : {};
 
-    if (IS_READONLY) {
-      // Viewers always use the live GitHub data — never cache locally
-      state.events   = remoteEvents;
-      state.projects = remoteProjects;
-      state.dayNotes = remoteDayNotes;
-    } else {
-      // Editor: merge remote and local so no data is lost.
-      // Remote events/projects that aren't in local get added; local-only ones are kept.
-      const localIds = new Set(state.events.map(e => e.id));
-      remoteEvents.forEach(e => { if (!localIds.has(e.id)) state.events.push(e); });
-      const localProjIds = new Set(state.projects.map(p => p.id));
-      remoteProjects.forEach(p => { if (!localProjIds.has(p.id)) state.projects.push(p); });
-      Object.entries(remoteDayNotes).forEach(([k, v]) => {
-        if (!state.dayNotes[k]) state.dayNotes[k] = v;
-      });
-      // Persist merged state to localStorage and push merged result to GitHub
+    // Always use live GitHub data as the source of truth for everyone.
+    // For the editor, merge so any locally-unsaved changes aren't lost.
+    if (!IS_READONLY) {
+      const localIds     = new Set(remoteEvents.map(e => e.id));
+      const localProjIds = new Set(remoteProjects.map(p => p.id));
+      state.events.forEach(e   => { if (!localIds.has(e.id))         remoteEvents.push(e); });
+      state.projects.forEach(p => { if (!localProjIds.has(p.id))     remoteProjects.push(p); });
+      Object.entries(state.dayNotes).forEach(([k, v]) => { if (!remoteDayNotes[k]) remoteDayNotes[k] = v; });
+    }
+
+    state.events   = remoteEvents;
+    state.projects = remoteProjects;
+    state.dayNotes = remoteDayNotes;
+
+    ensureOrders();
+    if (!IS_READONLY) {
       localStorage.setItem('planner_events',   JSON.stringify(state.events));
       localStorage.setItem('planner_projects', JSON.stringify(state.projects));
       localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
       scheduleGitHubPush();
     }
-
-    ensureOrders();
     render();
     setSyncStatus('ok', 'ready');
   } catch(e) {
@@ -2108,49 +2062,10 @@ if (!cfg.owner && window.location.hostname.endsWith('.github.io')) {
   cfg.branch = cfg.branch || 'main';
 }
 
-function buildShareUrl(view, readonly) {
-  const base = window.location.origin + window.location.pathname;
-  const p = new URLSearchParams({ owner: cfg.owner, repo: cfg.repo, branch: cfg.branch });
-  if (view)     p.set('view', view);
-  if (readonly) p.set('mode', 'readonly');
-  return base + '?' + p.toString();
-}
-
-async function copyShareUrl(url, btn) {
-  try {
-    await navigator.clipboard.writeText(url);
-  } catch(e) {
-    // fallback for non-https
-    const ta = document.createElement('textarea');
-    ta.value = url; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-  }
-  const orig = btn.textContent;
-  btn.textContent = '✓ Copied!';
-  setTimeout(() => { btn.textContent = orig; }, 2000);
-}
-
-function openShareModal() {
-  const hasSync = !!(cfg.owner && cfg.repo);
-  document.getElementById('shareNoSync').style.display  = hasSync ? 'none' : '';
-  document.getElementById('shareOptions').style.display = hasSync ? '' : 'none';
-  document.getElementById('shareOverlay').classList.add('open');
-}
-
-document.getElementById('shareBtn').addEventListener('click', openShareModal);
-document.getElementById('shareModalClose').addEventListener('click', () => {
-  document.getElementById('shareOverlay').classList.remove('open');
-});
-document.getElementById('shareOverlay').addEventListener('click', e => {
-  if (e.target.id === 'shareOverlay') document.getElementById('shareOverlay').classList.remove('open');
-});
-document.getElementById('shareCalBtn').addEventListener('click',  e => copyShareUrl(buildShareUrl('calendar', true),  e.currentTarget));
-document.getElementById('shareListBtn').addEventListener('click', e => copyShareUrl(buildShareUrl('list',     true),  e.currentTarget));
-document.getElementById('shareFullBtn').addEventListener('click', e => copyShareUrl(buildShareUrl(null,       false), e.currentTarget));
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 initCustomColorControls();
-loadLocal();
+if (!IS_READONLY) loadLocal();
 
 // Apply readonly mode before first render
 if (IS_READONLY) document.body.classList.add('readonly');
