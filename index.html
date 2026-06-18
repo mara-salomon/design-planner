@@ -1651,6 +1651,14 @@ async function loadFromGitHub() {
     const r   = await fetch(url);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const json = await r.json();
+    const remoteHasData = (Array.isArray(json.events) && json.events.length > 0)
+                       || (Array.isArray(json.projects) && json.projects.length > 0);
+    const localHasData  = state.events.length > 0 || state.projects.length > 0;
+    // Never silently wipe existing local data with an empty remote file
+    if (!remoteHasData && localHasData) {
+      setSyncStatus('ok', `${cfg.owner}/${cfg.repo}`);
+      return;
+    }
     if (Array.isArray(json.events))   state.events   = json.events;
     if (Array.isArray(json.projects)) state.projects = json.projects;
     if (json.dayNotes && typeof json.dayNotes === 'object') state.dayNotes = json.dayNotes;
@@ -1673,23 +1681,42 @@ async function pushToGitHub() {
       'Authorization': `token ${cfg.token}`,
       'Accept': 'application/vnd.github.v3+json',
     };
-    let sha;
-    const getR = await fetch(apiBase + `?ref=${cfg.branch}`, { headers });
-    if (getR.ok) sha = (await getR.json()).sha;
-
-    const payload = { events: state.events, projects: state.projects, dayNotes: state.dayNotes };
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-    const body = {
-      message: `Update planner — ${new Date().toISOString().slice(0,10)}`,
-      content, branch: cfg.branch,
+    const fetchSha = async () => {
+      const r = await fetch(apiBase + `?ref=${cfg.branch}&t=${Date.now()}`, {
+        headers, cache: 'no-store',
+      });
+      if (r.ok) return (await r.json()).sha;
+      return undefined;
     };
-    if (sha) body.sha = sha;
 
-    const putR = await fetch(apiBase, {
+    const buildBody = (sha) => {
+      const payload = { events: state.events, projects: state.projects, dayNotes: state.dayNotes };
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+      const body = {
+        message: `Update planner — ${new Date().toISOString().slice(0,10)}`,
+        content, branch: cfg.branch,
+      };
+      if (sha) body.sha = sha;
+      return body;
+    };
+
+    let sha = await fetchSha();
+    let putR = await fetch(apiBase, {
       method: 'PUT',
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(buildBody(sha)),
     });
+
+    // If SHA mismatch, re-fetch the latest SHA and retry once
+    if (!putR.ok && putR.status === 409) {
+      sha = await fetchSha();
+      putR = await fetch(apiBase, {
+        method: 'PUT',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildBody(sha)),
+      });
+    }
+
     if (!putR.ok) { const e = await putR.json(); throw new Error(e.message || putR.status); }
     setSyncStatus('ok', 'synced ✓');
   } catch(e) {
@@ -2039,6 +2066,13 @@ if (_urlParams.get('owner') && _urlParams.get('repo')) {
   cfg.owner  = _urlParams.get('owner');
   cfg.repo   = _urlParams.get('repo');
   cfg.branch = _urlParams.get('branch') || 'main';
+}
+
+// When running on GitHub Pages, auto-detect owner/repo from the URL
+if (!cfg.owner && window.location.hostname.endsWith('.github.io')) {
+  cfg.owner  = window.location.hostname.replace('.github.io', '');
+  cfg.repo   = window.location.pathname.split('/').filter(Boolean)[0] || '';
+  cfg.branch = cfg.branch || 'main';
 }
 
 function buildShareUrl(view, readonly) {
