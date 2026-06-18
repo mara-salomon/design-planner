@@ -1667,9 +1667,9 @@ async function loadFromGitHub() {
     const json = JSON.parse(decodeURIComponent(escape(atob(meta.content.replace(/\s/g, '')))));
 
     const localHasData = state.events.length > 0 || state.projects.length > 0;
-    if (localHasData) {
-      // Local data exists — this device is the editor. Keep local state as truth
-      // and push it to GitHub so remote catches up.
+    if (localHasData && !IS_READONLY) {
+      // Local data exists and this is the editor — local state is truth.
+      // Push local to GitHub so remote catches up.
       setSyncStatus('ok', 'ready');
       scheduleGitHubPush();
       return;
