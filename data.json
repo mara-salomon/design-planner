@@ -129,6 +129,11 @@
       "id": "mqjc6uluw5lr5ajp8cq",
       "name": "US Energy",
       "color": "#f59e0b"
+    },
+    {
+      "id": "mqjc7yok5wsh805ver6",
+      "name": "Pharma",
+      "color": "#ec4899"
     }
   ],
   "dayNotes": {}
