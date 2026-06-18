@@ -1,3 +1,55 @@
 {
-  "events": []
+  "events": [],
+  "projects": [
+    {
+      "id": "mqj2da8vlliq6q4s79",
+      "name": "Podcast [EAI Pulse/The Backlog]",
+      "color": "#14b8a6"
+    },
+    {
+      "id": "mqj2ke9metncs726ut7",
+      "name": "ADV Website 2026",
+      "color": "#3b82f6"
+    },
+    {
+      "id": "mqj2kttl0yhx7uxdvszq",
+      "name": "Operating Model of the Future",
+      "color": "#ef4444"
+    },
+    {
+      "id": "mqj2l7d4wx6t6fmis3",
+      "name": "Ad-Hoc Tile",
+      "color": "#85aaad"
+    },
+    {
+      "id": "mqj2lzp4s5inkgz7tco",
+      "name": "US Energy",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "mqj2mf3bx32wiy7qyi",
+      "name": "Pharma",
+      "color": "#ec4899"
+    },
+    {
+      "id": "mqj2mt55xd3pj9h68yg",
+      "name": "Miro Partnership",
+      "color": "#f97316"
+    },
+    {
+      "id": "mqj2n7dn1vok3jbx5o8",
+      "name": "AI Center of Excellence",
+      "color": "#8b5cf6"
+    },
+    {
+      "id": "mqj2tv5kmkny05g7wxj",
+      "name": "EAI x ADV Collaboration",
+      "color": "#3b82f6"
+    }
+  ],
+  "dayNotes": {
+    "2026-06-30": "Send Timesheet",
+    "2026-06-15": "Send Timesheet",
+    "2026-06-16": "Miro Release"
+  }
 }
