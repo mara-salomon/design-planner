@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Planner</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f8f8f6;
+    --surface: #ffffff;
+    --border: #e5e5e0;
+    --text: #1a1a1a;
+    --muted: #888;
+    --accent: #1d9acc;
+    --accent-light: #e6f5fb;
+    --red: #ef4444;
+    --green: #10b981;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+    --radius: 8px;
+    --cell-header-h: 34px; /* date-circle (24px) + margin (4px) + padding-top (6px) */
+    --ribbon-h: 20px;
+    --ribbon-slot-h: 24px; /* ribbon + gap */
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header-left  { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+
+  h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+
+  .month-nav { display: flex; align-items: center; gap: 6px; }
+  .month-label {
+    font-size: 1.05rem; font-weight: 600;
+    min-width: 156px; text-align: center;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    font-size: 0.875rem; font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--text);
+    transition: background .15s, box-shadow .15s;
+  }
+  .btn:hover { background: #f0f0ec; box-shadow: var(--shadow); }
+  .btn-icon   { padding: 7px 10px; font-size: 1rem; }
+  .btn-sm     { padding: 4px 10px; font-size: 0.78rem; }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #4338ca; }
+  .btn-danger  { background: var(--red); color: #fff; border-color: var(--red); }
+  .btn-danger:hover  { background: #dc2626; }
+  .btn-ghost { border-color: transparent; background: transparent; color: var(--muted); }
+  .btn-ghost:hover { background: #f0f0ec; color: var(--text); box-shadow: none; }
+
+  .sync-status {
+    font-size: 0.78rem; color: var(--muted);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .sync-dot.ok   { background: var(--green); }
+  .sync-dot.err  { background: var(--red); }
+  .sync-dot.busy { background: #f59e0b; animation: pulse .8s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+
+  /* ── Calendar ── */
+  .calendar { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+
+  .day-names {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+  .day-name {
+    padding: 10px 0; text-align: center;
+    font-size: 0.75rem; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+
+  /* ── Week rows ── */
+  .week-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    position: relative;
+  }
+
+  .cell {
+    min-height: 110px;
+    min-width: 0;        /* prevent grid item from expanding beyond its 1fr column */
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 5px 5px;
+    cursor: pointer;
+    transition: background .12s;
+    display: flex;
+    flex-direction: column;
+  }
+  .week-row .cell:last-child { border-right: none; }
+  .cell:hover { background: #fafaf8; }
+  .cell.other-month { background: #fafafa; }
+  .cell.other-month .cell-date { color: #ccc; }
+  .cell.past .cell-date { color: #ccc; }
+  .cell.past { background: #fcfcfc; }
+  .show-past .cell.past .cell-date { color: var(--muted); }
+  .show-past .cell.past { background: var(--surface); }
+
+  /* Eye button active state */
+  .btn-icon.eye-active { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+  .btn-icon.eye-active:hover { background: var(--accent-light); }
+
+  /* ── Drag and drop ── */
+  .event-chip, .event-ribbon { cursor: grab; }
+  .event-chip.dimmed, .event-ribbon.dimmed { opacity: 0.12 !important; filter: none !important; }
+  .dragging { opacity: 0.28 !important; cursor: grabbing !important; }
+  .cell.drop-target {
+    background: var(--accent-light) !important;
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  /* insert-before: blue line above the hovered element */
+  .insert-before { box-shadow: 0 -3px 0 0 var(--accent) !important; z-index: 5; position: relative; }
+  /* insert-after:  blue line below the hovered element */
+  .insert-after  { box-shadow: 0  3px 0 0 var(--accent) !important; z-index: 5; position: relative; }
+
+  /* ── Legend ── */
+  #calLegend {
+    margin-top: 14px;
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 14px 20px;
+  }
+  .legend-title {
+    font-size: 0.7rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .07em;
+    margin-bottom: 10px;
+  }
+  .legend-items {
+    display: flex; flex-wrap: wrap; gap: 8px 20px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 0.82rem; font-weight: 500;
+    cursor: pointer; border-radius: 6px; padding: 3px 6px;
+    transition: background .12s;
+  }
+  .legend-item:hover { background: var(--accent-light); }
+  .legend-dot {
+    width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  .cell-date {
+    font-size: 0.8rem; font-weight: 600; color: var(--muted);
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .cell.today .cell-date { background: var(--accent); color: #fff; }
+
+  .cell-header {
+    display: flex; align-items: center; gap: 5px;
+    margin-bottom: 4px; min-width: 0;
+  }
+  .cell-note {
+    flex: 1; min-width: 0;
+    font-size: 0.8rem; color: var(--muted) !important; font-weight: 600;
+    border: 0 !important; outline: 0 !important;
+    background: transparent !important; box-shadow: none !important;
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    padding: 0; margin: 0; height: 24px; line-height: 24px;
+    font-family: inherit !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    cursor: text;
+  }
+
+  /* Spacer to push single-day chips below the ribbon overlay */
+  .ribbon-spacer { flex-shrink: 0; }
+
+  .cell-chips { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+
+  .event-chip {
+    font-size: 0.72rem; font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer; line-height: 1.5;
+    transition: filter .12s;
+  }
+  .event-chip:hover { filter: brightness(.9); }
+
+  .more-label {
+    font-size: 0.7rem; color: var(--muted);
+    padding: 1px 4px; cursor: pointer;
+  }
+  .more-label:hover { color: var(--accent); }
+
+  /* ── Ribbon overlay ── */
+  .week-ribbons {
+    position: absolute;
+    top: var(--cell-header-h);
+    left: 0; right: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .event-ribbon {
+    position: absolute;
+    height: var(--ribbon-h);
+    display: flex; align-items: center;
+    padding: 0 7px;
+    font-size: 0.72rem; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer;
+    pointer-events: all;
+    transition: filter .12s;
+  }
+  .event-ribbon:hover { filter: brightness(.9); }
+
+  /* ── Modals ── */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.35); z-index: 100;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface); border-radius: 12px;
+    width: 100%; max-width: 440px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    overflow: hidden;
+    animation: slide-up .18s ease;
+  }
+  @keyframes slide-up { from { transform: translateY(12px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+
+  .modal-header {
+    padding: 18px 20px 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 1rem; font-weight: 700; }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: none; background: #f0f0ec; cursor: pointer;
+    font-size: 1rem; display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+  }
+  .modal-close:hover { background: #e5e5e0; color: var(--text); }
+
+  .modal-body  { padding: 16px 20px 4px; display: flex; flex-direction: column; gap: 12px; }
+  .modal-footer { padding: 16px 20px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+
+  label { font-size: 0.8rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px; }
+  .label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .label-row label { margin-bottom: 0; }
+
+  input[type=text], input[type=date], textarea, select {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 0.875rem; font-family: inherit;
+    color: var(--text); background: var(--bg);
+    outline: none; transition: border-color .15s;
+  }
+  input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+
+  /* ── Projects modal ── */
+  .proj-list { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; }
+  .proj-empty { font-size: 0.82rem; color: var(--muted); padding: 8px 0; }
+
+  .proj-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--radius);
+    border: 1px solid var(--border);
+    transition: background .12s;
+  }
+  .proj-row:hover { background: var(--bg); }
+  .proj-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .proj-name { flex: 1; font-size: 0.875rem; font-weight: 500; }
+  .proj-row-actions { display: flex; gap: 4px; }
+
+  .proj-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+
+  .proj-form { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+  .proj-form-title { font-size: 0.82rem; font-weight: 700; color: var(--muted); }
+
+  /* Color palette */
+  .palette { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .palette-swatch {
+    width: 22px; height: 22px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    transition: transform .12s, border-color .12s;
+    flex-shrink: 0;
+  }
+  .palette-swatch:hover { transform: scale(1.2); }
+  .palette-swatch.selected { border-color: #1a1a1a; transform: scale(1.15); }
+
+  .custom-color-row {
+    display: flex; align-items: center; gap: 8px; margin-top: 6px;
+  }
+  .custom-color-picker {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid var(--border); padding: 0;
+    cursor: pointer; overflow: hidden; flex-shrink: 0;
+    background: none;
+  }
+  .custom-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+  .custom-color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
+  .custom-color-picker::-moz-color-swatch { border: none; border-radius: 50%; }
+  .hex-input {
+    width: 96px; padding: 5px 8px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 0.82rem; font-family: monospace;
+    color: var(--text); background: var(--bg);
+    outline: none; transition: border-color .15s;
+  }
+  .hex-input:focus { border-color: var(--accent); }
+  .hex-preview {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1px solid var(--border); flex-shrink: 0;
+  }
+
+  /* Project select in event modal — custom searchable dropdown */
+  .proj-custom-select { position: relative; }
+  .proj-custom-trigger {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--bg); cursor: pointer;
+    transition: border-color .15s; user-select: none;
+  }
+  .proj-custom-trigger:focus, .proj-custom-trigger.open { border-color: var(--accent); outline: none; }
+  .proj-custom-trigger .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .proj-custom-trigger .proj-select-label { flex: 1; font-size: 0.875rem; }
+  .proj-select-arrow { color: var(--muted); font-size: 0.75rem; flex-shrink: 0; }
+  .proj-custom-panel {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 4px 16px rgba(0,0,0,.12); z-index: 300; overflow: hidden;
+  }
+  .proj-search-wrap { padding: 8px; border-bottom: 1px solid var(--border); }
+  .proj-search-input {
+    width: 100%; padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.85rem; outline: none; background: var(--bg);
+  }
+  .proj-search-input:focus { border-color: var(--accent); }
+  .proj-options { max-height: 180px; overflow-y: auto; }
+  .proj-option {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; cursor: pointer; font-size: 0.875rem;
+    transition: background .1s;
+  }
+  .proj-option:hover { background: var(--accent-light); }
+  .proj-option.selected { font-weight: 600; }
+  .proj-option .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Projects modal search */
+  .proj-list-search { padding: 0 0 10px; }
+  .proj-list-search .proj-search-input { background: var(--surface); }
+
+  /* List view search */
+  .list-search-bar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); padding-bottom: 8px;
+  }
+  .list-search-input {
+    width: 100%; padding: 9px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 0.875rem; outline: none; background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .list-search-input:focus { border-color: var(--accent); }
+
+  .tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px;
+    background: var(--accent-light); color: var(--accent); letter-spacing: .02em;
+  }
+
+  /* ── Day overlay ── */
+  .day-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.35); z-index: 100;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .day-overlay.open { display: flex; }
+  .day-panel {
+    background: var(--surface); border-radius: 12px;
+    width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    animation: slide-up .18s ease;
+  }
+  .day-panel-header {
+    padding: 16px 18px 12px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; background: var(--surface);
+  }
+  .day-panel-title { font-size: 1rem; font-weight: 700; }
+  .day-panel-events { padding: 12px 18px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .day-event-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 10px; border-radius: var(--radius);
+    border: 1px solid var(--border); cursor: pointer; transition: background .12s;
+  }
+  .day-event-row:hover { background: var(--bg); }
+  .day-event-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .day-event-info { flex: 1; min-width: 0; }
+  .day-event-title { font-size: 0.875rem; font-weight: 600; }
+  .day-event-meta  { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  /* ── Settings panel ── */
+  .settings-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.35); z-index: 200;
+    align-items: flex-start; justify-content: flex-end; padding: 16px;
+  }
+  .settings-overlay.open { display: flex; }
+  .settings-panel {
+    background: var(--surface); border-radius: 12px;
+    width: 100%; max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    padding: 20px; display: flex; flex-direction: column; gap: 14px;
+    animation: slide-up .18s ease;
+    margin-top: 60px;
+  }
+  .settings-panel h2 { font-size: 1rem; font-weight: 700; }
+  .settings-panel p  { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+  .settings-panel a  { color: var(--accent); }
+
+  /* ── Readonly mode ── */
+  .readonly .edit-only { display: none !important; }
+
+  /* ── Share modal ── */
+  .share-option {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .share-option:last-child { border-bottom: none; padding-bottom: 0; }
+  .share-option-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 3px; }
+  .share-option-desc  { font-size: 0.78rem; color: var(--muted); }
+  .share-no-sync { font-size: 0.875rem; color: var(--muted); line-height: 1.5; padding: 8px 0; }
+
+  /* ── View toggle ── */
+  .view-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    gap: 0;
+  }
+  .view-btn {
+    border: none;
+    border-radius: 0;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    background: var(--surface);
+  }
+  .view-btn:hover { background: #f0f0ec; box-shadow: none; color: var(--text); }
+  .view-btn.active { background: var(--accent); color: #fff; }
+  .view-btn.active:hover { background: var(--accent); }
+
+  /* ── List view ── */
+  #listView {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #listResults {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .list-group {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .list-group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .list-group-dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .list-group-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    flex: 1;
+  }
+  .list-group-count {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .list-event-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 11px 18px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .list-event-row:last-child { border-bottom: none; }
+  .list-event-row:hover { background: var(--bg); }
+
+  .list-event-bar {
+    width: 3px;
+    align-self: stretch;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-right: 14px;
+  }
+  .list-event-title {
+    flex: 1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .list-event-title.past { color: var(--muted); }
+
+  .list-event-date {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .list-event-date.past {
+    background: #f0f0ec;
+    color: #aaa;
+  }
+
+  .list-empty {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 40px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  /* ── Accomplished Tasks accordion ── */
+  .accomplished-section { display: flex; flex-direction: column; gap: 8px; }
+
+  .accomplished-toggle {
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 18px;
+    background: var(--surface); border-radius: 12px;
+    box-shadow: var(--shadow);
+    cursor: pointer; user-select: none;
+    transition: background .12s;
+    border: none; width: 100%; text-align: left;
+  }
+  .accomplished-toggle:hover { background: #f0f0ec; }
+
+  .accomplished-chevron {
+    font-size: 0.65rem; color: var(--muted);
+    transition: transform .22s ease;
+    flex-shrink: 0; line-height: 1;
+  }
+  .accomplished-chevron.open { transform: rotate(90deg); }
+
+  .accomplished-label { flex: 1; font-size: 0.875rem; font-weight: 700; color: var(--muted); }
+  .accomplished-count { font-size: 0.75rem; color: var(--muted); }
+
+  .accomplished-body {
+    display: flex; flex-direction: column; gap: 8px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    .cell { min-height: 80px; }
+    h1 { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header">
+  <div class="header-left">
+    <h1>Design Planner</h1>
+    <div class="view-toggle" id="viewToggleWrap">
+      <button class="btn view-btn active" id="calViewBtn">Calendar</button>
+      <button class="btn view-btn" id="listViewBtn">List</button>
+    </div>
+    <div class="month-nav" id="monthNav">
+      <button class="btn btn-icon" id="prevBtn">‹</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button class="btn btn-icon" id="nextBtn">›</button>
+    </div>
+    <button class="btn" id="todayBtn">Today</button>
+    <button class="btn btn-icon" id="showPastBtn" title="Show/hide past date colours">
+      <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>
+    </button>
+    <button class="btn edit-only" id="projectsBtn">Projects</button>
+  </div>
+  <div class="header-right">
+    <button class="btn edit-only" id="shareBtn">↗ Share</button>
+    <span class="sync-status edit-only" id="syncStatus">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="syncText">not configured</span>
+    </span>
+    <button class="btn btn-primary edit-only" id="syncBtn">↑ Sync</button>
+    <button class="btn btn-icon edit-only" id="settingsBtn" title="GitHub settings">⚙</button>
+  </div>
+</div>
+
+<!-- ── Calendar ── -->
+<div class="calendar" id="calendarView">
+  <div class="day-names">
+    <div class="day-name">Sun</div><div class="day-name">Mon</div>
+    <div class="day-name">Tue</div><div class="day-name">Wed</div>
+    <div class="day-name">Thu</div><div class="day-name">Fri</div>
+    <div class="day-name">Sat</div>
+  </div>
+  <div id="grid"></div>
+</div>
+
+<!-- ── Legend ── -->
+<div id="calLegend" style="display:none"></div>
+
+<!-- ── List view ── -->
+<div id="listView" style="display:none">
+  <div class="list-search-bar">
+    <input type="text" class="list-search-input" id="listSearch" placeholder="Search projects or tasks…" autocomplete="off" />
+  </div>
+  <div id="listResults"></div>
+</div>
+
+<!-- ── Event modal ── -->
+<div class="overlay" id="eventOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Add event</span>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Title *</label>
+        <input type="text" id="evTitle" placeholder="Event title" />
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Start date</label>
+          <input type="date" id="evDate" />
+        </div>
+        <div class="field">
+          <label>End date (optional)</label>
+          <input type="date" id="evEndDate" />
+        </div>
+      </div>
+      <div class="field">
+        <div class="label-row">
+          <label>Project</label>
+          <button class="btn btn-ghost btn-sm" id="evManageProjects" type="button">Manage projects</button>
+        </div>
+        <div class="proj-custom-select" id="projSelectWrap">
+          <div class="proj-custom-trigger" id="projSelectTrigger" tabindex="0">
+            <div class="dot" id="projSelectDot" style="background:#94a3b8"></div>
+            <span class="proj-select-label" id="projSelectLabel">— no project —</span>
+            <span class="proj-select-arrow">▾</span>
+          </div>
+          <div class="proj-custom-panel" id="projSelectPanel" style="display:none">
+            <div class="proj-search-wrap">
+              <input type="text" class="proj-search-input" id="projSelectSearch" placeholder="Search projects…" autocomplete="off" />
+            </div>
+            <div class="proj-options" id="projSelectOptions"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="evNotes" placeholder="Additional details…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="deleteBtn" style="display:none">Delete</button>
+      <button class="btn" id="cancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Projects modal ── -->
+<div class="overlay" id="projectsOverlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">My Projects</span>
+      <button class="modal-close" id="projModalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="proj-list-search">
+        <input type="text" class="proj-search-input" id="projListSearch" placeholder="Search projects…" autocomplete="off" />
+      </div>
+      <div class="proj-list" id="projList"></div>
+      <hr class="proj-divider">
+      <div class="proj-form">
+        <div class="proj-form-title" id="projFormTitle">New project</div>
+        <div class="field">
+          <label>Name</label>
+          <input type="text" id="projNameInput" placeholder="e.g. Website Redesign" />
+        </div>
+        <div class="field">
+          <label>Color</label>
+          <div class="palette" id="projPalette"></div>
+          <div class="custom-color-row">
+            <input type="color" class="custom-color-picker" id="projColorPicker" value="#6366f1" title="Pick a custom color" />
+            <input type="text"  class="hex-input" id="projHexInput" placeholder="#rrggbb" maxlength="7" spellcheck="false" />
+            <div class="hex-preview" id="projHexPreview"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="projCancelEdit" style="display:none">Cancel edit</button>
+      <button class="btn btn-primary" id="projSaveBtn">Add project</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Day detail overlay ── -->
+<div class="day-overlay" id="dayOverlay">
+  <div class="day-panel">
+    <div class="day-panel-header">
+      <span class="day-panel-title" id="dayPanelTitle"></span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm edit-only" id="dayAddBtn">+ Add</button>
+        <button class="modal-close" id="dayClose">✕</button>
+      </div>
+    </div>
+    <div class="day-panel-events" id="dayPanelEvents"></div>
+  </div>
+</div>
+
+<!-- ── Share modal ── -->
+<div class="overlay" id="shareOverlay">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <span class="modal-title">Share</span>
+      <button class="modal-close" id="shareModalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="share-no-sync" id="shareNoSync" style="display:none">
+        Configure GitHub sync first (⚙ Settings) so others can load your data.
+      </div>
+      <div id="shareOptions">
+        <div class="share-option">
+          <div>
+            <div class="share-option-title">Calendar View</div>
+            <div class="share-option-desc">Read-only · Calendar view only</div>
+          </div>
+          <button class="btn btn-sm" id="shareCalBtn">Copy link</button>
+        </div>
+        <div class="share-option">
+          <div>
+            <div class="share-option-title">List View</div>
+            <div class="share-option-desc">Read-only · List view only</div>
+          </div>
+          <button class="btn btn-sm" id="shareListBtn">Copy link</button>
+        </div>
+        <div class="share-option">
+          <div>
+            <div class="share-option-title">Full Planner</div>
+            <div class="share-option-desc">Edit mode · Both views</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="shareFullBtn">Copy link</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Settings panel ── -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <h2>GitHub Sync ⚙</h2>
+    <p>
+      Events and projects are saved to <code>data.json</code> in your repo and served via
+      <a href="https://pages.github.com" target="_blank">GitHub Pages</a>.
+      Share the Pages URL — viewers need no token.
+    </p>
+    <div class="field">
+      <label>GitHub username / org</label>
+      <input type="text" id="cfgOwner" placeholder="e.g. mara-salomon" />
+    </div>
+    <div class="field">
+      <label>Repository name</label>
+      <input type="text" id="cfgRepo" placeholder="e.g. planner" />
+    </div>
+    <div class="field">
+      <label>Branch</label>
+      <input type="text" id="cfgBranch" placeholder="main" />
+    </div>
+    <div class="field">
+      <label>Personal Access Token &nbsp;<span class="tag">stored locally only</span></label>
+      <input type="text" id="cfgToken" placeholder="ghp_…" />
+    </div>
+    <p>
+      Need a token?
+      <a href="https://github.com/settings/tokens/new?scopes=repo&description=Planner" target="_blank">
+        Create one here
+      </a> — only the <code>repo</code> scope is needed.
+    </p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" id="settingsCancel">Cancel</button>
+      <button class="btn btn-primary" id="settingsSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────────────────────
+const PALETTE = [
+  '#6366f1','#8b5cf6','#ec4899','#ef4444',
+  '#f97316','#f59e0b','#84cc16','#10b981',
+  '#14b8a6','#06b6d4','#3b82f6','#a855f7',
+];
+const DEFAULT_COLOR = '#94a3b8'; // for events without a project
+const CELL_HEADER_H = 34;
+const RIBBON_H      = 20;
+const RIBBON_SLOT_H = 24;
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const _today = new Date();
+
+let state = {
+  year:  _today.getFullYear(),
+  month: _today.getMonth(),
+  view:     'calendar',  // 'calendar' | 'list'
+  showPast: false,       // true = un-grey past dates
+  events:   [],  // { id, title, date, endDate?, projectId?, notes }
+  projects: [],  // { id, name, color }
+  dayNotes: {},  // { "YYYY-MM-DD": "note text" }
+  editingId:        null,
+  editingProjectId: null,
+  dayTarget: null,
+};
+
+let cfg = {
+  owner:  localStorage.getItem('gh_owner')  || '',
+  repo:   localStorage.getItem('gh_repo')   || '',
+  branch: localStorage.getItem('gh_branch') || 'main',
+  token:  localStorage.getItem('gh_token')  || '',
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function dateStr(y, m, d) {
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function todayStr() {
+  const t = new Date();
+  return dateStr(t.getFullYear(), t.getMonth(), t.getDate());
+}
+
+function fmtMonth(y, m) {
+  return new Date(y, m, 1).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+}
+
+function fmtDayFull(ds) {
+  const [y,m,d] = ds.split('-').map(Number);
+  return new Date(y, m-1, d).toLocaleDateString('en-AU',
+    { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+function daysBetween(a, b) {
+  return Math.round((new Date(b + 'T00:00') - new Date(a + 'T00:00')) / 86400000);
+}
+
+function evColor(ev) {
+  if (ev.projectId) {
+    const p = state.projects.find(p => p.id === ev.projectId);
+    if (p) return p.color;
+  }
+  return DEFAULT_COLOR;
+}
+
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function isMultiDay(ev) {
+  return ev.endDate && ev.endDate > ev.date;
+}
+
+function eventsOnDate(ds) {
+  return state.events.filter(ev => {
+    if (isMultiDay(ev)) return ev.date <= ds && ds <= ev.endDate;
+    return ev.date === ds;
+  });
+}
+
+// ── Drag and drop ────────────────────────────────────────────────────────────
+let drag = { id: null };
+
+function addDays(ds, n) {
+  const [y, m, d] = ds.split('-').map(Number);
+  const result = new Date(y, m - 1, d + n); // local time — avoids UTC offset shifting the date
+  return dateStr(result.getFullYear(), result.getMonth(), result.getDate());
+}
+
+function ensureOrders() {
+  state.events.forEach((ev, i) => { if (ev.order == null) ev.order = i; });
+}
+
+function reorderEvent(draggedId, targetId, insertBefore) {
+  const sorted = [...state.events].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const dragIdx = sorted.findIndex(e => e.id === draggedId);
+  if (dragIdx === -1) return;
+  const [dragged] = sorted.splice(dragIdx, 1);
+  const targetIdx = sorted.findIndex(e => e.id === targetId);
+  if (targetIdx === -1) return;
+  sorted.splice(insertBefore ? targetIdx : targetIdx + 1, 0, dragged);
+  sorted.forEach((ev, i) => { ev.order = i; });
+  render();
+  autoSaveLocal();
+}
+
+function moveEventToDate(id, targetDate) {
+  const ev = state.events.find(e => e.id === id);
+  if (!ev) return;
+  const delta = daysBetween(ev.date, targetDate);
+  if (delta === 0) return;
+  ev.date    = addDays(ev.date, delta);
+  if (ev.endDate) ev.endDate = addDays(ev.endDate, delta);
+  render();
+  if (state.view === 'list') renderListView();
+  autoSaveLocal();
+}
+
+function attachDragSource(el, ev) {
+  if (IS_READONLY) return;
+  el.draggable = true;
+  el.addEventListener('dragstart', e => {
+    drag.id = ev.id;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', ev.id);
+    requestAnimationFrame(() => el.classList.add('dragging'));
+  });
+  el.addEventListener('dragend', () => {
+    el.classList.remove('dragging');
+    drag.id = null;
+    document.querySelectorAll('.drop-target, .insert-before, .insert-after')
+      .forEach(x => x.classList.remove('drop-target', 'insert-before', 'insert-after'));
+  });
+  // Drag over this element = reorder intent; cursor Y determines insert-before vs insert-after
+  el.addEventListener('dragover', e => {
+    if (!drag.id || drag.id === ev.id) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = el.getBoundingClientRect();
+    const before = e.clientY < rect.top + rect.height / 2;
+    el.classList.toggle('insert-before', before);
+    el.classList.toggle('insert-after',  !before);
+  });
+  el.addEventListener('dragleave', () => el.classList.remove('insert-before', 'insert-after'));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const before = el.classList.contains('insert-before');
+    el.classList.remove('insert-before', 'insert-after');
+    if (drag.id && drag.id !== ev.id) reorderEvent(drag.id, ev.id, before);
+  });
+}
+
+function attachCellDrop(cell, ds) {
+  cell.addEventListener('dragover', e => {
+    if (!drag.id) return;
+    e.preventDefault();
+    cell.classList.add('drop-target');
+  });
+  cell.addEventListener('dragleave', e => {
+    if (!cell.contains(e.relatedTarget)) cell.classList.remove('drop-target');
+  });
+  cell.addEventListener('drop', e => {
+    e.preventDefault();
+    cell.classList.remove('drop-target');
+    if (drag.id) moveEventToDate(drag.id, ds);
+  });
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  document.getElementById('monthLabel').textContent = fmtMonth(state.year, state.month);
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  const today = todayStr();
+  const firstDay     = new Date(state.year, state.month, 1).getDay();
+  const daysInMonth  = new Date(state.year, state.month + 1, 0).getDate();
+  const prevMoDays   = new Date(state.year, state.month, 0).getDate();
+  const totalCells   = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  const numWeeks     = totalCells / 7;
+
+  // Build flat date list
+  const cells = [];
+  for (let i = 0; i < totalCells; i++) {
+    let ds, isOther = false;
+    if (i < firstDay) {
+      const d = prevMoDays - firstDay + i + 1;
+      const m = state.month === 0 ? 11 : state.month - 1;
+      const y = state.month === 0 ? state.year - 1 : state.year;
+      ds = dateStr(y, m, d); isOther = true;
+    } else if (i >= firstDay + daysInMonth) {
+      const d = i - firstDay - daysInMonth + 1;
+      const m = state.month === 11 ? 0 : state.month + 1;
+      const y = state.month === 11 ? state.year + 1 : state.year;
+      ds = dateStr(y, m, d); isOther = true;
+    } else {
+      ds = dateStr(state.year, state.month, i - firstDay + 1);
+    }
+    cells.push({ ds, isOther });
+  }
+
+  // Sort by user-defined order so slot assignment and chip stacking respect drag-reorder
+  const ordered      = [...state.events].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const multiDayEvs  = ordered.filter(isMultiDay);
+  const singleDayEvs = ordered.filter(ev => !isMultiDay(ev));
+
+  for (let w = 0; w < numWeeks; w++) {
+    const week      = cells.slice(w * 7, (w + 1) * 7);
+    const weekStart = week[0].ds;
+    const weekEnd   = week[6].ds;
+
+    // Multi-day events intersecting this week
+    const weekMulti = multiDayEvs.filter(ev => ev.date <= weekEnd && ev.endDate >= weekStart);
+    const slotted   = assignSlots(weekMulti, weekStart, weekEnd);
+    const numSlots  = slotted.length ? Math.max(...slotted.map(s => s.slot)) + 1 : 0;
+
+    const weekEl = document.createElement('div');
+    weekEl.className = 'week-row';
+
+    // Cells
+    week.forEach(({ ds, isOther }) => {
+      const cell = document.createElement('div');
+      const isPast = ds < today && !state.showPast;
+      cell.className = 'cell'
+        + (isOther        ? ' other-month' : '')
+        + (ds === today   ? ' today' : '')
+        + (isPast         ? ' past' : '');
+      cell.dataset.date = ds;
+
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'cell-header';
+
+      const dateDiv = document.createElement('div');
+      dateDiv.className = 'cell-date';
+      dateDiv.textContent = parseInt(ds.split('-')[2]);
+      headerDiv.appendChild(dateDiv);
+
+      const noteInput = document.createElement('input');
+      noteInput.type = 'text';
+      noteInput.className = 'cell-note';
+      noteInput.value = state.dayNotes[ds] || '';
+      noteInput.placeholder = '';
+      noteInput.maxLength = 60;
+      noteInput.spellcheck = false;
+      if (IS_READONLY) { noteInput.readOnly = true; noteInput.style.cursor = 'default'; }
+      noteInput.setAttribute('title', state.dayNotes[ds] || '');
+      noteInput.style.color = isPast ? '#ccc' : 'var(--muted)';
+      noteInput.addEventListener('blur', () => {
+        const val = noteInput.value.trim();
+        if (val) state.dayNotes[ds] = val;
+        else delete state.dayNotes[ds];
+        noteInput.setAttribute('title', val);
+        autoSaveLocal();
+      });
+      noteInput.addEventListener('keydown', e => {
+        e.stopPropagation();
+        if (e.key === 'Enter') { e.preventDefault(); noteInput.blur(); }
+        if (e.key === 'Escape') { noteInput.value = state.dayNotes[ds] || ''; noteInput.blur(); }
+      });
+      headerDiv.appendChild(noteInput);
+
+      // Stop all clicks in the header from bubbling to the cell's openAddModal handler.
+      // The date circle opens the modal explicitly; the note area edits the note.
+      headerDiv.addEventListener('click', e => e.stopPropagation());
+      dateDiv.addEventListener('click', () => openAddModal(ds));
+
+      cell.appendChild(headerDiv);
+
+      // Spacer reserves room for ribbons
+      if (numSlots > 0) {
+        const spacer = document.createElement('div');
+        spacer.className = 'ribbon-spacer';
+        spacer.style.height = (numSlots * RIBBON_SLOT_H) + 'px';
+        cell.appendChild(spacer);
+      }
+
+      // Single-day chips for this cell
+      const singles = singleDayEvs.filter(ev => ev.date === ds);
+      const chipsEl = document.createElement('div');
+      chipsEl.className = 'cell-chips';
+      const MAX = 5;
+      singles.slice(0, MAX).forEach(ev => {
+        const chip = document.createElement('div');
+        chip.className = 'event-chip';
+        chip.dataset.projectId = ev.projectId || '';
+        const c = (ds < today && !state.showPast) ? '#aaaaaa' : evColor(ev);
+        chip.style.background = hexToRgba(c, 0.14);
+        chip.style.color = c;
+        chip.textContent = ev.title;
+        chip.addEventListener('click', e => { e.stopPropagation(); openEditModal(ev.id); });
+        attachDragSource(chip, ev);
+        chipsEl.appendChild(chip);
+      });
+      if (singles.length > MAX) {
+        const more = document.createElement('div');
+        more.className = 'more-label';
+        more.textContent = `+${singles.length - MAX} more`;
+        more.addEventListener('click', e => { e.stopPropagation(); openDayOverlay(ds); });
+        chipsEl.appendChild(more);
+      }
+      cell.appendChild(chipsEl);
+
+      cell.addEventListener('click', () => openAddModal(ds));
+      attachCellDrop(cell, ds);
+      weekEl.appendChild(cell);
+    });
+
+    // Ribbon overlay
+    if (numSlots > 0) {
+      const layer = document.createElement('div');
+      layer.className = 'week-ribbons';
+      layer.style.height = (numSlots * RIBBON_SLOT_H) + 'px';
+
+      slotted.forEach(({ ev, startIdx, endIdx, slot, startsHere, endsHere }) => {
+        const span   = endIdx - startIdx + 1;
+        const color  = (ev.endDate < today && !state.showPast) ? '#aaaaaa' : evColor(ev);
+        const inset  = 3;
+
+        const ribbon = document.createElement('div');
+        ribbon.className = 'event-ribbon';
+        ribbon.dataset.projectId = ev.projectId || '';
+        ribbon.style.top    = (slot * RIBBON_SLOT_H) + 'px';
+        ribbon.style.left   = `calc(${startIdx} * 100% / 7 + ${startsHere ? inset : 0}px)`;
+        ribbon.style.width  = `calc(${span} * 100% / 7 - ${startsHere ? inset : 0}px - ${endsHere ? inset : 0}px)`;
+        ribbon.style.background = hexToRgba(color, 0.18);
+        ribbon.style.color      = color;
+
+        const r = 5;
+        ribbon.style.borderRadius =
+          `${startsHere ? r : 0}px ${endsHere ? r : 0}px ${endsHere ? r : 0}px ${startsHere ? r : 0}px`;
+
+        // Left border indicator when ribbon continues from prev week
+        if (!startsHere) {
+          ribbon.style.borderLeft = `3px solid ${color}`;
+        }
+
+        ribbon.textContent = startsHere ? ev.title : '';
+        if (startsHere) {
+          ribbon.title = ev.title;
+        }
+
+        ribbon.addEventListener('click', e => { e.stopPropagation(); openEditModal(ev.id); });
+        attachDragSource(ribbon, ev);
+        layer.appendChild(ribbon);
+      });
+
+      weekEl.appendChild(layer);
+    }
+
+    grid.appendChild(weekEl);
+  }
+
+  if (state.view === 'calendar') renderLegend();
+}
+
+function assignSlots(events, weekStart, weekEnd) {
+  const placed = events.map(ev => {
+    const startIdx = ev.date < weekStart
+      ? 0
+      : daysBetween(weekStart, ev.date);
+    const endIdx = ev.endDate > weekEnd
+      ? 6
+      : daysBetween(weekStart, ev.endDate);
+    return {
+      ev, startIdx, endIdx,
+      startsHere: ev.date >= weekStart,
+      endsHere:   ev.endDate <= weekEnd,
+    };
+  });
+
+  // Primary: left-to-right (so non-overlapping events share slots correctly)
+  // Secondary: user-defined order (so drag-reorder controls slot priority among overlapping events)
+  placed.sort((a, b) => a.startIdx - b.startIdx || (a.ev.order ?? 0) - (b.ev.order ?? 0));
+
+  const slots = []; // last endIdx used in each slot
+  placed.forEach(item => {
+    let assigned = false;
+    for (let s = 0; s < slots.length; s++) {
+      if (slots[s] < item.startIdx) {
+        item.slot = s; slots[s] = item.endIdx; assigned = true; break;
+      }
+    }
+    if (!assigned) { item.slot = slots.length; slots.push(item.endIdx); }
+  });
+
+  return placed;
+}
+
+// ── Event modal — searchable project dropdown ────────────────────────────────
+let selectedProjectId = '';
+
+function openProjDropdown() {
+  document.getElementById('projSelectPanel').style.display = '';
+  document.getElementById('projSelectTrigger').classList.add('open');
+  document.getElementById('projSelectSearch').value = '';
+  renderProjOptions('');
+  document.getElementById('projSelectSearch').focus();
+}
+
+function closeProjDropdown() {
+  document.getElementById('projSelectPanel').style.display = 'none';
+  document.getElementById('projSelectTrigger').classList.remove('open');
+}
+
+function renderProjOptions(query) {
+  const opts = document.getElementById('projSelectOptions');
+  opts.innerHTML = '';
+  const q = query.toLowerCase();
+  const items = [{ id: '', name: '— no project —', color: DEFAULT_COLOR }]
+    .concat(state.projects.filter(p => !q || p.name.toLowerCase().includes(q)));
+  items.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'proj-option' + (p.id === selectedProjectId ? ' selected' : '');
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.style.background = p.id ? p.color : DEFAULT_COLOR;
+    const label = document.createElement('span');
+    label.textContent = p.name;
+    el.appendChild(dot);
+    el.appendChild(label);
+    el.addEventListener('mousedown', e => {
+      e.preventDefault();
+      setSelectedProject(p.id);
+      closeProjDropdown();
+    });
+    opts.appendChild(el);
+  });
+}
+
+function setSelectedProject(id) {
+  selectedProjectId = id;
+  const p = state.projects.find(p => p.id === id);
+  document.getElementById('projSelectDot').style.background = p ? p.color : DEFAULT_COLOR;
+  document.getElementById('projSelectLabel').textContent = p ? p.name : '— no project —';
+}
+
+function populateProjectDropdown(selectedId) {
+  selectedProjectId = selectedId || '';
+  setSelectedProject(selectedProjectId);
+  closeProjDropdown();
+}
+
+function openAddModal(ds) {
+  if (IS_READONLY) return;
+  state.editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add event';
+  document.getElementById('evTitle').value = '';
+  document.getElementById('evDate').value  = ds;
+  document.getElementById('evEndDate').value = '';
+  document.getElementById('evNotes').value = '';
+  document.getElementById('deleteBtn').style.display = 'none';
+  populateProjectDropdown('');
+  document.getElementById('eventOverlay').classList.add('open');
+  document.getElementById('evTitle').focus();
+}
+
+function openEditModal(id) {
+  if (IS_READONLY) return;
+  const ev = state.events.find(e => e.id === id);
+  if (!ev) return;
+  state.editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit event';
+  document.getElementById('evTitle').value    = ev.title;
+  document.getElementById('evDate').value     = ev.date;
+  document.getElementById('evEndDate').value  = ev.endDate || '';
+  document.getElementById('evNotes').value    = ev.notes || '';
+  document.getElementById('deleteBtn').style.display = 'inline-flex';
+  populateProjectDropdown(ev.projectId || '');
+  document.getElementById('eventOverlay').classList.add('open');
+  document.getElementById('evTitle').focus();
+}
+
+function closeEventModal() {
+  document.getElementById('eventOverlay').classList.remove('open');
+}
+
+function saveEvent() {
+  const title = document.getElementById('evTitle').value.trim();
+  if (!title) { document.getElementById('evTitle').focus(); return; }
+  const endDate = document.getElementById('evEndDate').value;
+  const existingOrder = state.editingId
+    ? (state.events.find(e => e.id === state.editingId)?.order ?? state.events.length)
+    : state.events.length;
+  const ev = {
+    id:        state.editingId || uid(),
+    title,
+    date:      document.getElementById('evDate').value,
+    endDate:   endDate || undefined,
+    projectId: selectedProjectId || undefined,
+    notes:     document.getElementById('evNotes').value.trim() || undefined,
+    order:     existingOrder,
+  };
+  if (state.editingId) {
+    state.events = state.events.map(e => e.id === state.editingId ? ev : e);
+  } else {
+    state.events.push(ev);
+  }
+  closeEventModal();
+  render();
+  if (state.view === 'list') renderListView();
+  autoSaveLocal();
+}
+
+function deleteEvent() {
+  if (!state.editingId) return;
+  state.events = state.events.filter(e => e.id !== state.editingId);
+  closeEventModal();
+  if (document.getElementById('dayOverlay').classList.contains('open')) {
+    openDayOverlay(state.dayTarget);
+  }
+  render();
+  if (state.view === 'list') renderListView();
+  autoSaveLocal();
+}
+
+// ── Projects modal ───────────────────────────────────────────────────────────
+function openProjectsModal() {
+  state.editingProjectId = null;
+  resetProjForm();
+  const s = document.getElementById('projListSearch');
+  if (s) s.value = '';
+  renderProjList('');
+  document.getElementById('projectsOverlay').classList.add('open');
+}
+
+function closeProjectsModal() {
+  document.getElementById('projectsOverlay').classList.remove('open');
+  state.editingProjectId = null;
+}
+
+function renderProjList(query) {
+  if (query === undefined) query = document.getElementById('projListSearch')?.value || '';
+  const list = document.getElementById('projList');
+  list.innerHTML = '';
+  const q = query.toLowerCase();
+  const filtered = state.projects.filter(p => !q || p.name.toLowerCase().includes(q));
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="proj-empty">${state.projects.length ? 'No projects match.' : 'No projects yet — add one below.'}</div>`;
+    return;
+  }
+  filtered.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'proj-row';
+    row.innerHTML = `
+      <div class="proj-dot" style="background:${p.color}"></div>
+      <span class="proj-name">${p.name}</span>
+      <div class="proj-row-actions">
+        <button class="btn btn-sm" data-id="${p.id}" data-action="edit">Edit</button>
+        <button class="btn btn-sm btn-danger" data-id="${p.id}" data-action="delete">✕</button>
+      </div>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      if (btn.dataset.action === 'delete') {
+        deleteProject(id);
+      } else {
+        startEditProject(id);
+      }
+    });
+  });
+}
+
+function isValidHex(v) { return /^#[0-9a-fA-F]{6}$/.test(v); }
+
+function syncCustomColorUI(hex) {
+  const picker  = document.getElementById('projColorPicker');
+  const hexInp  = document.getElementById('projHexInput');
+  const preview = document.getElementById('projHexPreview');
+  if (isValidHex(hex)) {
+    picker.value           = hex;
+    preview.style.background = hex;
+    preview.style.borderColor = hex;
+  }
+  hexInp.value = hex;
+}
+
+function selectCustomColor(hex) {
+  // Deselect all swatches and treat this as the active color
+  document.querySelectorAll('#projPalette .palette-swatch').forEach(x => x.classList.remove('selected'));
+  syncCustomColorUI(hex);
+}
+
+function buildProjPalette(selected) {
+  const el = document.getElementById('projPalette');
+  el.innerHTML = '';
+  const isPreset = PALETTE.includes(selected);
+  PALETTE.forEach(hex => {
+    const s = document.createElement('div');
+    s.className = 'palette-swatch' + (hex === selected ? ' selected' : '');
+    s.style.background = hex;
+    s.dataset.hex = hex;
+    s.addEventListener('click', () => {
+      el.querySelectorAll('.palette-swatch').forEach(x => x.classList.remove('selected'));
+      s.classList.add('selected');
+      syncCustomColorUI(hex);
+    });
+    el.appendChild(s);
+  });
+
+  // Seed the custom controls
+  const initHex = isValidHex(selected) ? selected : PALETTE[0];
+  syncCustomColorUI(initHex);
+  if (!isPreset) syncCustomColorUI(selected); // show custom value as-is
+}
+
+function selectedProjColor() {
+  const s = document.querySelector('#projPalette .palette-swatch.selected');
+  if (s) return s.dataset.hex;
+  // Fall back to whatever is in the hex input
+  const v = document.getElementById('projHexInput').value.trim();
+  return isValidHex(v) ? v : PALETTE[0];
+}
+
+// Wire custom color controls (called once after DOM is ready)
+function initCustomColorControls() {
+  const picker  = document.getElementById('projColorPicker');
+  const hexInp  = document.getElementById('projHexInput');
+
+  picker.addEventListener('input', () => {
+    selectCustomColor(picker.value);
+  });
+
+  hexInp.addEventListener('input', () => {
+    let v = hexInp.value.trim();
+    if (!v.startsWith('#')) v = '#' + v;
+    document.getElementById('projHexPreview').style.background =
+      isValidHex(v) ? v : 'transparent';
+    if (isValidHex(v)) {
+      selectCustomColor(v);
+    }
+  });
+
+  hexInp.addEventListener('blur', () => {
+    let v = hexInp.value.trim();
+    if (!v.startsWith('#')) v = '#' + v;
+    if (!isValidHex(v)) {
+      // Revert to current swatch or picker
+      const s = document.querySelector('#projPalette .palette-swatch.selected');
+      syncCustomColorUI(s ? s.dataset.hex : picker.value);
+    }
+  });
+}
+
+function resetProjForm() {
+  document.getElementById('projNameInput').value = '';
+  document.getElementById('projFormTitle').textContent = 'New project';
+  document.getElementById('projSaveBtn').textContent   = 'Add project';
+  document.getElementById('projCancelEdit').style.display = 'none';
+  buildProjPalette(PALETTE[0]);
+  state.editingProjectId = null;
+}
+
+function startEditProject(id) {
+  const p = state.projects.find(p => p.id === id);
+  if (!p) return;
+  state.editingProjectId = id;
+  document.getElementById('projNameInput').value      = p.name;
+  document.getElementById('projFormTitle').textContent = 'Edit project';
+  document.getElementById('projSaveBtn').textContent   = 'Save changes';
+  document.getElementById('projCancelEdit').style.display = 'inline-flex';
+  buildProjPalette(p.color);
+  document.getElementById('projNameInput').focus();
+}
+
+function saveProject() {
+  const name = document.getElementById('projNameInput').value.trim();
+  if (!name) { document.getElementById('projNameInput').focus(); return; }
+  const color = selectedProjColor();
+  if (state.editingProjectId) {
+    state.projects = state.projects.map(p =>
+      p.id === state.editingProjectId ? { ...p, name, color } : p
+    );
+  } else {
+    state.projects.push({ id: uid(), name, color });
+  }
+  resetProjForm();
+  renderProjList();
+  render();
+  if (state.view === 'list') renderListView();
+  autoSaveLocal();
+}
+
+function deleteProject(id) {
+  if (!confirm('Delete this project? Events assigned to it will keep their dates but lose the project color.')) return;
+  state.projects = state.projects.filter(p => p.id !== id);
+  state.events = state.events.map(ev =>
+    ev.projectId === id ? { ...ev, projectId: undefined } : ev
+  );
+  renderProjList();
+  render();
+  if (state.view === 'list') renderListView();
+  autoSaveLocal();
+}
+
+// ── Day overlay ──────────────────────────────────────────────────────────────
+function openDayOverlay(ds) {
+  state.dayTarget = ds;
+  document.getElementById('dayPanelTitle').textContent = fmtDayFull(ds);
+  const evs  = eventsOnDate(ds);
+  const cont = document.getElementById('dayPanelEvents');
+  cont.innerHTML = '';
+  if (!evs.length) {
+    cont.innerHTML = '<p style="color:var(--muted);font-size:.85rem">No events.</p>';
+  } else {
+    evs.forEach(ev => {
+      const row  = document.createElement('div');
+      row.className = 'day-event-row';
+      const dot  = document.createElement('div');
+      dot.className = 'day-event-dot';
+      dot.style.background = evColor(ev);
+      const info = document.createElement('div');
+      info.className = 'day-event-info';
+      const proj = ev.projectId ? state.projects.find(p => p.id === ev.projectId) : null;
+      info.innerHTML = `<div class="day-event-title">${ev.title}</div>`;
+      if (proj)     info.innerHTML += `<div class="day-event-meta">${proj.name}</div>`;
+      if (ev.notes) info.innerHTML += `<div class="day-event-meta">${ev.notes}</div>`;
+      row.appendChild(dot); row.appendChild(info);
+      row.addEventListener('click', () => {
+        document.getElementById('dayOverlay').classList.remove('open');
+        openEditModal(ev.id);
+      });
+      cont.appendChild(row);
+    });
+  }
+  document.getElementById('dayOverlay').classList.add('open');
+}
+
+// ── Persistence ──────────────────────────────────────────────────────────────
+function startNoteEdit(noteSpan, ds) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'cell-note-input';
+  input.value = state.dayNotes[ds] || '';
+  input.maxLength = 60;
+  noteSpan.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function commit() {
+    const val = input.value.trim();
+    if (val) state.dayNotes[ds] = val;
+    else delete state.dayNotes[ds];
+    autoSaveLocal();
+    // Replace input back with span without full re-render
+    const newSpan = document.createElement('span');
+    newSpan.className = 'cell-note';
+    newSpan.textContent = val;
+    newSpan.title = val;
+    newSpan.addEventListener('click', e => { e.stopPropagation(); startNoteEdit(newSpan, ds); });
+    input.replaceWith(newSpan);
+  }
+
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.value = state.dayNotes[ds] || ''; input.blur(); }
+  });
+}
+
+function autoSaveLocal() {
+  localStorage.setItem('planner_events',   JSON.stringify(state.events));
+  localStorage.setItem('planner_projects', JSON.stringify(state.projects));
+  localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
+}
+
+function loadLocal() {
+  try {
+    const ev = localStorage.getItem('planner_events');
+    const pr = localStorage.getItem('planner_projects');
+    const dn = localStorage.getItem('planner_dayNotes');
+    if (ev) state.events   = JSON.parse(ev);
+    if (pr) state.projects = JSON.parse(pr);
+    if (dn) state.dayNotes = JSON.parse(dn);
+    ensureOrders();
+  } catch(e) {}
+}
+
+// ── GitHub sync ──────────────────────────────────────────────────────────────
+function setSyncStatus(status, text) {
+  document.getElementById('syncDot').className  = 'sync-dot ' + status;
+  document.getElementById('syncText').textContent = text;
+}
+
+async function loadFromGitHub() {
+  if (!cfg.owner || !cfg.repo) return;
+  setSyncStatus('busy', 'loading…');
+  try {
+    const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/data.json?t=${Date.now()}`;
+    const r   = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const json = await r.json();
+    if (Array.isArray(json.events))   state.events   = json.events;
+    if (Array.isArray(json.projects)) state.projects = json.projects;
+    if (json.dayNotes && typeof json.dayNotes === 'object') state.dayNotes = json.dayNotes;
+    ensureOrders();
+    autoSaveLocal();
+    render();
+    setSyncStatus('ok', 'synced');
+  } catch(e) {
+    setSyncStatus('err', 'load failed');
+    console.error(e);
+  }
+}
+
+async function pushToGitHub() {
+  if (!cfg.owner || !cfg.repo || !cfg.token) { openSettings(); return; }
+  setSyncStatus('busy', 'syncing…');
+  try {
+    const apiBase = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json`;
+    const headers = {
+      'Authorization': `token ${cfg.token}`,
+      'Accept': 'application/vnd.github.v3+json',
+    };
+    let sha;
+    const getR = await fetch(apiBase + `?ref=${cfg.branch}`, { headers });
+    if (getR.ok) sha = (await getR.json()).sha;
+
+    const payload = { events: state.events, projects: state.projects, dayNotes: state.dayNotes };
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+    const body = {
+      message: `Update planner — ${new Date().toISOString().slice(0,10)}`,
+      content, branch: cfg.branch,
+    };
+    if (sha) body.sha = sha;
+
+    const putR = await fetch(apiBase, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!putR.ok) { const e = await putR.json(); throw new Error(e.message || putR.status); }
+    setSyncStatus('ok', 'synced ✓');
+  } catch(e) {
+    setSyncStatus('err', 'sync failed');
+    console.error(e);
+    alert('GitHub sync failed: ' + e.message);
+  }
+}
+
+// ── Settings ─────────────────────────────────────────────────────────────────
+function openSettings() {
+  document.getElementById('cfgOwner').value  = cfg.owner;
+  document.getElementById('cfgRepo').value   = cfg.repo;
+  document.getElementById('cfgBranch').value = cfg.branch || 'main';
+  document.getElementById('cfgToken').value  = cfg.token;
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+
+function saveSettings() {
+  cfg.owner  = document.getElementById('cfgOwner').value.trim();
+  cfg.repo   = document.getElementById('cfgRepo').value.trim();
+  cfg.branch = document.getElementById('cfgBranch').value.trim() || 'main';
+  cfg.token  = document.getElementById('cfgToken').value.trim();
+  localStorage.setItem('gh_owner',  cfg.owner);
+  localStorage.setItem('gh_repo',   cfg.repo);
+  localStorage.setItem('gh_branch', cfg.branch);
+  localStorage.setItem('gh_token',  cfg.token);
+  document.getElementById('settingsOverlay').classList.remove('open');
+  if (cfg.owner && cfg.repo) {
+    setSyncStatus('ok', `${cfg.owner}/${cfg.repo}`);
+    loadFromGitHub();
+  } else {
+    setSyncStatus('', 'not configured');
+  }
+}
+
+// ── List view ────────────────────────────────────────────────────────────────
+function fmtDateShort(ds) {
+  const [y, m, d] = ds.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function buildListGroups(events) {
+  // Sort by due date then group by project; no-project bucket goes last
+  const sorted = [...events].sort((a, b) => {
+    const da = a.endDate || a.date;
+    const db = b.endDate || b.date;
+    return da < db ? -1 : da > db ? 1 : 0;
+  });
+  const map = new Map();
+  sorted.forEach(ev => {
+    const key = ev.projectId || 'none';
+    if (!map.has(key)) {
+      const proj = ev.projectId ? state.projects.find(p => p.id === ev.projectId) : null;
+      map.set(key, { proj, events: [] });
+    }
+    map.get(key).events.push(ev);
+  });
+  const proj  = [...map.entries()].filter(([k]) => k !== 'none');
+  const none  = [...map.entries()].filter(([k]) => k === 'none');
+  return [...proj, ...none];
+}
+
+function buildEventRow(ev, color, isPast) {
+  const dueDate = ev.endDate || ev.date;
+  const row = document.createElement('div');
+  row.className = 'list-event-row';
+  row.title = 'Click to edit';
+
+  const bar = document.createElement('div');
+  bar.className = 'list-event-bar';
+  bar.style.background = isPast ? '#ddd' : color;
+
+  const title = document.createElement('div');
+  title.className = 'list-event-title' + (isPast ? ' past' : '');
+  title.textContent = ev.title;
+
+  const badge = document.createElement('div');
+  badge.className = 'list-event-date' + (isPast ? ' past' : '');
+  badge.textContent = fmtDateShort(dueDate);
+  if (!isPast) {
+    badge.style.background = hexToRgba(color, 0.12);
+    badge.style.color = color;
+  }
+
+  row.appendChild(bar); row.appendChild(title); row.appendChild(badge);
+  row.addEventListener('click', () => openEditModal(ev.id));
+  return row;
+}
+
+function buildGroupEl(proj, events, isPast) {
+  const color = proj ? proj.color : DEFAULT_COLOR;
+  const name  = proj ? proj.name  : 'No project';
+
+  const group = document.createElement('div');
+  group.className = 'list-group';
+
+  const header = document.createElement('div');
+  header.className = 'list-group-header';
+  header.innerHTML = `
+    <div class="list-group-dot" style="background:${isPast ? '#bbb' : color}"></div>
+    <span class="list-group-name" style="${isPast ? 'color:var(--muted)' : ''}">${name}</span>
+    <span class="list-group-count">${events.length} task${events.length !== 1 ? 's' : ''}</span>`;
+  group.appendChild(header);
+
+  events.forEach(ev => group.appendChild(buildEventRow(ev, color, isPast)));
+  return group;
+}
+
+let listSearchQuery = '';
+
+function renderListView() {
+  const container = document.getElementById('listResults');
+  container.innerHTML = '';
+
+  const today = todayStr();
+
+  if (!state.events.length) {
+    const empty = document.createElement('div');
+    empty.className = 'list-empty';
+    empty.textContent = 'No events yet — switch to Calendar view and click a day to add one.';
+    container.appendChild(empty);
+    return;
+  }
+
+  const q = listSearchQuery.toLowerCase();
+  function matchesQuery(ev) {
+    if (!q) return true;
+    if (ev.title.toLowerCase().includes(q)) return true;
+    const proj = state.projects.find(p => p.id === ev.projectId);
+    return proj ? proj.name.toLowerCase().includes(q) : false;
+  }
+
+  const active = state.events.filter(ev => (ev.endDate || ev.date) >= today && matchesQuery(ev));
+  const past   = state.events.filter(ev => (ev.endDate || ev.date) <  today && matchesQuery(ev));
+
+  // Active groups
+  if (active.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'list-empty';
+    empty.textContent = q ? 'No tasks match your search.' : 'No upcoming tasks — all done!';
+    container.appendChild(empty);
+  } else {
+    buildListGroups(active).forEach(([, { proj, events }]) => {
+      container.appendChild(buildGroupEl(proj, events, false));
+    });
+  }
+
+  // Accomplished Tasks accordion
+  if (past.length > 0) {
+    const section = document.createElement('div');
+    section.className = 'accomplished-section';
+
+    const toggle = document.createElement('button');
+    toggle.className = 'accomplished-toggle';
+    toggle.innerHTML = `
+      <span class="accomplished-chevron">▶</span>
+      <span class="accomplished-label">Accomplished Tasks</span>
+      <span class="accomplished-count">${past.length} task${past.length !== 1 ? 's' : ''}</span>`;
+
+    const body = document.createElement('div');
+    body.className = 'accomplished-body';
+    body.style.display = 'none';
+
+    buildListGroups(past).forEach(([, { proj, events }]) => {
+      body.appendChild(buildGroupEl(proj, events, true));
+    });
+
+    toggle.addEventListener('click', () => {
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'flex';
+      toggle.querySelector('.accomplished-chevron').classList.toggle('open', !open);
+    });
+
+    section.appendChild(toggle);
+    section.appendChild(body);
+    container.appendChild(section);
+  }
+}
+
+// ── Legend ────────────────────────────────────────────────────────────────────
+function renderLegend() {
+  const el = document.getElementById('calLegend');
+  const monthStart = dateStr(state.year, state.month, 1);
+  const monthEnd   = dateStr(state.year, state.month, new Date(state.year, state.month + 1, 0).getDate());
+
+  const inMonth = state.events.filter(ev => {
+    const end = ev.endDate || ev.date;
+    return ev.date <= monthEnd && end >= monthStart;
+  });
+
+  const seenIds  = new Set(inMonth.map(ev => ev.projectId).filter(Boolean));
+  const hasNone  = inMonth.some(ev => !ev.projectId);
+  const projects = state.projects.filter(p => seenIds.has(p.id));
+
+  if (!projects.length && !hasNone) { el.style.display = 'none'; return; }
+
+  el.style.display = '';
+  el.innerHTML = `<div class="legend-title">This month</div><div class="legend-items" id="legendItems"></div>`;
+  const items = document.getElementById('legendItems');
+
+  function addLegendItem(color, name, projectId) {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-dot" style="background:${color}"></div>${name}`;
+    item.addEventListener('mouseenter', () => {
+      document.querySelectorAll('.event-ribbon, .event-chip').forEach(el => {
+        el.classList.toggle('dimmed', el.dataset.projectId !== projectId);
+      });
+    });
+    item.addEventListener('mouseleave', () => {
+      document.querySelectorAll('.event-ribbon, .event-chip').forEach(el => {
+        el.classList.remove('dimmed');
+      });
+    });
+    items.appendChild(item);
+  }
+
+  projects.forEach(p => addLegendItem(p.color, p.name, p.id));
+  if (hasNone) addLegendItem('#94a3b8', 'No project', '');
+}
+
+function setView(v) {
+  state.view = v;
+  const isCalendar = v === 'calendar';
+  document.getElementById('calendarView').style.display = isCalendar ? '' : 'none';
+  document.getElementById('calLegend').style.display    = isCalendar ? '' : 'none';
+  document.getElementById('listView').style.display     = isCalendar ? 'none' : 'flex';
+  document.getElementById('monthNav').style.display     = isCalendar ? '' : 'none';
+  document.getElementById('todayBtn').style.display     = isCalendar ? '' : 'none';
+  document.getElementById('showPastBtn').style.display  = isCalendar ? '' : 'none';
+  document.getElementById('calViewBtn').classList.toggle('active',  isCalendar);
+  document.getElementById('listViewBtn').classList.toggle('active', !isCalendar);
+  if (!isCalendar) renderListView();
+  else renderLegend();
+}
+
+// ── Event wiring ──────────────────────────────────────────────────────────────
+// Nav
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (--state.month < 0) { state.month = 11; state.year--; } render();
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (++state.month > 11) { state.month = 0; state.year++; } render();
+});
+document.getElementById('todayBtn').addEventListener('click', () => {
+  const t = new Date(); state.year = t.getFullYear(); state.month = t.getMonth(); render();
+});
+
+// Event modal
+document.getElementById('saveBtn').addEventListener('click', saveEvent);
+document.getElementById('cancelBtn').addEventListener('click', closeEventModal);
+document.getElementById('modalClose').addEventListener('click', closeEventModal);
+document.getElementById('deleteBtn').addEventListener('click', deleteEvent);
+document.getElementById('eventOverlay').addEventListener('click', e => {
+  if (e.target.id === 'eventOverlay') closeEventModal();
+});
+document.getElementById('evTitle').addEventListener('keydown', e => { if (e.key === 'Enter') saveEvent(); });
+document.getElementById('projSelectTrigger').addEventListener('click', () => {
+  const panel = document.getElementById('projSelectPanel');
+  if (panel.style.display === 'none') openProjDropdown();
+  else closeProjDropdown();
+});
+document.getElementById('projSelectTrigger').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProjDropdown(); }
+  if (e.key === 'Escape') closeProjDropdown();
+});
+document.getElementById('projSelectSearch').addEventListener('input', e => {
+  renderProjOptions(e.target.value);
+});
+document.addEventListener('mousedown', e => {
+  const wrap = document.getElementById('projSelectWrap');
+  if (wrap && !wrap.contains(e.target)) closeProjDropdown();
+});
+document.getElementById('projListSearch').addEventListener('input', e => {
+  renderProjList(e.target.value);
+});
+document.getElementById('evManageProjects').addEventListener('click', () => {
+  closeEventModal(); openProjectsModal();
+});
+
+// Projects modal
+document.getElementById('calViewBtn').addEventListener('click', () => setView('calendar'));
+document.getElementById('listViewBtn').addEventListener('click', () => setView('list'));
+document.getElementById('listSearch').addEventListener('input', e => {
+  listSearchQuery = e.target.value;
+  renderListView();
+});
+const EYE_CLOSED = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+const EYE_OPEN  = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+
+document.getElementById('showPastBtn').addEventListener('click', () => {
+  state.showPast = !state.showPast;
+  document.getElementById('eyeIcon').innerHTML = state.showPast ? EYE_OPEN : EYE_CLOSED;
+  document.getElementById('showPastBtn').classList.toggle('eye-active', state.showPast);
+  render();
+});
+document.getElementById('projectsBtn').addEventListener('click', openProjectsModal);
+document.getElementById('projModalClose').addEventListener('click', closeProjectsModal);
+document.getElementById('projectsOverlay').addEventListener('click', e => {
+  if (e.target.id === 'projectsOverlay') closeProjectsModal();
+});
+document.getElementById('projSaveBtn').addEventListener('click', saveProject);
+document.getElementById('projCancelEdit').addEventListener('click', resetProjForm);
+document.getElementById('projNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveProject(); });
+
+// Day overlay
+document.getElementById('dayClose').addEventListener('click', () => {
+  document.getElementById('dayOverlay').classList.remove('open');
+});
+document.getElementById('dayAddBtn').addEventListener('click', () => {
+  const ds = state.dayTarget;
+  document.getElementById('dayOverlay').classList.remove('open');
+  openAddModal(ds);
+});
+document.getElementById('dayOverlay').addEventListener('click', e => {
+  if (e.target.id === 'dayOverlay') document.getElementById('dayOverlay').classList.remove('open');
+});
+
+// Settings
+document.getElementById('syncBtn').addEventListener('click', pushToGitHub);
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+document.getElementById('settingsSave').addEventListener('click', saveSettings);
+document.getElementById('settingsCancel').addEventListener('click', () => {
+  document.getElementById('settingsOverlay').classList.remove('open');
+});
+document.getElementById('settingsOverlay').addEventListener('click', e => {
+  if (e.target.id === 'settingsOverlay') document.getElementById('settingsOverlay').classList.remove('open');
+});
+
+// Global escape
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  closeEventModal();
+  closeProjectsModal();
+  document.getElementById('dayOverlay').classList.remove('open');
+  document.getElementById('settingsOverlay').classList.remove('open');
+});
+
+// ── Share / URL params ────────────────────────────────────────────────────────
+const _urlParams   = new URLSearchParams(window.location.search);
+const IS_READONLY  = _urlParams.get('mode') === 'readonly';
+const LOCKED_VIEW  = _urlParams.get('view'); // 'calendar' | 'list' | null
+
+// If shared URL contains GitHub config, use it (overrides localStorage)
+if (_urlParams.get('owner') && _urlParams.get('repo')) {
+  cfg.owner  = _urlParams.get('owner');
+  cfg.repo   = _urlParams.get('repo');
+  cfg.branch = _urlParams.get('branch') || 'main';
+}
+
+function buildShareUrl(view, readonly) {
+  const base = window.location.origin + window.location.pathname;
+  const p = new URLSearchParams({ owner: cfg.owner, repo: cfg.repo, branch: cfg.branch });
+  if (view)     p.set('view', view);
+  if (readonly) p.set('mode', 'readonly');
+  return base + '?' + p.toString();
+}
+
+async function copyShareUrl(url, btn) {
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch(e) {
+    // fallback for non-https
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  }
+  const orig = btn.textContent;
+  btn.textContent = '✓ Copied!';
+  setTimeout(() => { btn.textContent = orig; }, 2000);
+}
+
+function openShareModal() {
+  const hasSync = !!(cfg.owner && cfg.repo);
+  document.getElementById('shareNoSync').style.display  = hasSync ? 'none' : '';
+  document.getElementById('shareOptions').style.display = hasSync ? '' : 'none';
+  document.getElementById('shareOverlay').classList.add('open');
+}
+
+document.getElementById('shareBtn').addEventListener('click', openShareModal);
+document.getElementById('shareModalClose').addEventListener('click', () => {
+  document.getElementById('shareOverlay').classList.remove('open');
+});
+document.getElementById('shareOverlay').addEventListener('click', e => {
+  if (e.target.id === 'shareOverlay') document.getElementById('shareOverlay').classList.remove('open');
+});
+document.getElementById('shareCalBtn').addEventListener('click',  e => copyShareUrl(buildShareUrl('calendar', true),  e.currentTarget));
+document.getElementById('shareListBtn').addEventListener('click', e => copyShareUrl(buildShareUrl('list',     true),  e.currentTarget));
+document.getElementById('shareFullBtn').addEventListener('click', e => copyShareUrl(buildShareUrl(null,       false), e.currentTarget));
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+initCustomColorControls();
+loadLocal();
+
+// Apply readonly mode before first render
+if (IS_READONLY) document.body.classList.add('readonly');
+
+render();
+
+// Lock view if specified in URL
+if (LOCKED_VIEW) {
+  setView(LOCKED_VIEW);
+  document.getElementById('viewToggleWrap').style.display = 'none';
+}
+
+if (cfg.owner && cfg.repo) {
+  setSyncStatus('ok', `${cfg.owner}/${cfg.repo}`);
+  loadFromGitHub();
+} else {
+  setSyncStatus('', 'not configured');
+}
+</script>
+</body>
+</html>
