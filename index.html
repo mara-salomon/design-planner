@@ -1658,33 +1658,42 @@ async function loadFromGitHub() {
   if (!cfg.owner || !cfg.repo) return;
   setSyncStatus('busy', 'loading…');
   try {
+    // Use cache:'reload' to force a real network request, bypassing all browser caching
     const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json?ref=${cfg.branch}&_=${Date.now()}`;
     const headers = { 'Accept': 'application/vnd.github.v3+json' };
     if (cfg.token) headers['Authorization'] = `token ${cfg.token}`;
-    const r = await fetch(apiUrl, { headers, cache: 'no-store' });
+    const r = await fetch(apiUrl, { headers, cache: 'reload' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const meta = await r.json();
     const json = JSON.parse(decodeURIComponent(escape(atob(meta.content.replace(/\s/g, '')))));
 
-    const localHasData = state.events.length > 0 || state.projects.length > 0;
-    if (localHasData && !IS_READONLY) {
-      // Local data exists and this is the editor — local state is truth.
-      // Push local to GitHub so remote catches up.
-      setSyncStatus('ok', 'ready');
-      scheduleGitHubPush();
-      return;
-    }
+    const remoteEvents   = Array.isArray(json.events)   ? json.events   : [];
+    const remoteProjects = Array.isArray(json.projects) ? json.projects : [];
+    const remoteDayNotes = (json.dayNotes && typeof json.dayNotes === 'object') ? json.dayNotes : {};
 
-    // Local is empty (new browser / new device) — bootstrap from GitHub
-    if (Array.isArray(json.events))                         state.events   = json.events;
-    if (Array.isArray(json.projects))                       state.projects = json.projects;
-    if (json.dayNotes && typeof json.dayNotes === 'object') state.dayNotes = json.dayNotes;
-    ensureOrders();
-    if (!IS_READONLY) {
+    if (IS_READONLY) {
+      // Viewers always use the live GitHub data — never cache locally
+      state.events   = remoteEvents;
+      state.projects = remoteProjects;
+      state.dayNotes = remoteDayNotes;
+    } else {
+      // Editor: merge remote and local so no data is lost.
+      // Remote events/projects that aren't in local get added; local-only ones are kept.
+      const localIds = new Set(state.events.map(e => e.id));
+      remoteEvents.forEach(e => { if (!localIds.has(e.id)) state.events.push(e); });
+      const localProjIds = new Set(state.projects.map(p => p.id));
+      remoteProjects.forEach(p => { if (!localProjIds.has(p.id)) state.projects.push(p); });
+      Object.entries(remoteDayNotes).forEach(([k, v]) => {
+        if (!state.dayNotes[k]) state.dayNotes[k] = v;
+      });
+      // Persist merged state to localStorage and push merged result to GitHub
       localStorage.setItem('planner_events',   JSON.stringify(state.events));
       localStorage.setItem('planner_projects', JSON.stringify(state.projects));
       localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
+      scheduleGitHubPush();
     }
+
+    ensureOrders();
     render();
     setSyncStatus('ok', 'ready');
   } catch(e) {
