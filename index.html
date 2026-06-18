@@ -1614,11 +1614,22 @@ async function loadFromGitHub() {
   if (!cfg.owner || !cfg.repo) return;
   setSyncStatus('busy', 'loading…');
   try {
-    // Use cache:'reload' to force a real network request, bypassing all browser caching
-    const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json?ref=${cfg.branch}&_=${Date.now()}`;
     const headers = { 'Accept': 'application/vnd.github.v3+json' };
     if (cfg.token) headers['Authorization'] = `token ${cfg.token}`;
-    const r = await fetch(apiUrl, { headers, cache: 'reload' });
+
+    // Step 1: get the latest commit SHA for data.json.
+    // Unique timestamp in URL guarantees a cache miss on GitHub's CDN every time.
+    const commitsUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/commits?path=data.json&per_page=1&t=${Date.now()}`;
+    const commitsR = await fetch(commitsUrl, { headers, cache: 'no-store' });
+    if (!commitsR.ok) throw new Error(`HTTP ${commitsR.status}`);
+    const commits = await commitsR.json();
+    if (!Array.isArray(commits) || !commits[0]) throw new Error('no commits found');
+    const commitSha = commits[0].sha;
+
+    // Step 2: fetch the file at that exact commit SHA.
+    // Commit SHAs are immutable so this response is always correct regardless of caching.
+    const contentUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json?ref=${commitSha}`;
+    const r = await fetch(contentUrl, { headers, cache: 'no-store' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const meta = await r.json();
     const json = JSON.parse(decodeURIComponent(escape(atob(meta.content.replace(/\s/g, '')))));
