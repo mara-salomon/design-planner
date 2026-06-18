@@ -231,6 +231,14 @@
       "date": "2026-06-23",
       "projectId": "mqjc99tu3xnyv059ar2",
       "order": 32
+    },
+    {
+      "id": "mqjcms27y0f7a4lzde",
+      "title": "[AI CoE] Playbook",
+      "date": "2026-06-24",
+      "endDate": "2026-06-26",
+      "projectId": "mqjcm2906l5aycactzb",
+      "order": 33
     }
   ],
   "projects": [
