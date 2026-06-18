@@ -2161,35 +2161,30 @@ function buildShareHtml(monthRange) {
       return da < db ? -1 : da > db ? 1 : 0;
     });
 
-  // Group by week (Monday of deadline week), skipping weeks fully in the past
-  const thisWeekMonday = getWeekMonday(todayDateStr).toISOString().slice(0, 10);
-  const groups = [];
-  const groupIndex = {};
-  events.forEach(ev => {
-    const deadline = ev.endDate || ev.date;
-    const mon = getWeekMonday(deadline);
-    const key = mon.toISOString().slice(0, 10);
-    if (key < thisWeekMonday) return; // skip past weeks
-    if (!groupIndex[key]) {
-      groupIndex[key] = { label: 'Week of ' + fmtMonday(mon), items: [] };
-      groups.push(groupIndex[key]);
-    }
-    groupIndex[key].items.push(ev);
-  });
-
   const todayLabel = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const groupsHTML = groups.length
-    ? groups.map(g => `
-    <div class="wg">
-      <div class="wg-head">${escHtml(g.label)}</div>
-      ${g.items.map(ev => {
+  const listHTML = events.length
+    ? events.map((ev, i) => {
+        const rank = i + 1;
         const proj = projMap[ev.projectId];
         const color = proj?.color || '#94a3b8';
-        const label = proj?.name ? 'Task for ' + proj.name : (ev.name || 'Unassigned task');
-        return `<div class="tr"><span class="dot" style="background:${color}"></span><span class="tn">${escHtml(label)}</span></div>`;
-      }).join('')}
-    </div>`).join('')
+        const name = escHtml(ev.title || 'Untitled task');
+        const deadline = ev.endDate || ev.date;
+        const deadlineLabel = new Date(deadline + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+        if (rank <= 3) {
+          return `<div class="tr tr-top">
+  <span class="rank rank-${rank}">${rank}</span>
+  <span class="dot" style="background:${color}"></span>
+  <span class="tn tn-top">${name}</span>
+
+</div>`;
+        }
+        return `<div class="tr">
+  <span class="rank rank-n">${rank}</span>
+  <span class="dot" style="background:${color}"></span>
+  <span class="tn">${name}</span>
+</div>`;
+      }).join('')
     : '<p class="empty">No upcoming tasks.</p>';
 
   return `<!DOCTYPE html>
@@ -2205,12 +2200,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ph{margin-bottom:32px;padding-bottom:20px;border-bottom:2px solid #e2e8f0}
 .pt{font-size:1.4rem;font-weight:700}
 .ps{font-size:0.82rem;color:#94a3b8;margin-top:4px}
-.wg{margin-bottom:28px}
-.wg-head{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;padding-bottom:8px;border-bottom:1px solid #e2e8f0;margin-bottom:4px}
-.tr{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f1f5f9}
-.tr:last-child{border-bottom:none}
+.tr{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;margin-bottom:6px}
+.tr-top{background:#fff;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.rank{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0}
+.rank-1{background:#1e293b;color:#fff}
+.rank-2{background:#475569;color:#fff}
+.rank-3{background:#94a3b8;color:#fff}
+.rank-n{background:transparent;color:#cbd5e1;font-size:0.78rem;font-weight:600}
 .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.tn{font-size:0.88rem;color:#334155}
+.tn{font-size:0.88rem;color:#334155;flex:1}
+.tn-top{font-weight:600;color:#0f172a}
+.dl{font-size:0.75rem;color:#94a3b8;white-space:nowrap;flex-shrink:0}
 .empty{color:#94a3b8;font-style:italic;font-size:.9rem;padding:16px 0}
 </style>
 </head>
@@ -2220,7 +2220,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="pt">Design Planner</div>
     <div class="ps">Capacity snapshot &mdash; ${todayLabel}</div>
   </div>
-  ${groupsHTML}
+  ${listHTML}
 </div>
 </body>
 </html>`;
