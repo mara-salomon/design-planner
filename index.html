@@ -636,7 +636,7 @@
       <span id="syncText">not configured</span>
     </span>
     <button class="btn btn-primary edit-only" id="syncBtn">Save now</button>
-    <button class="btn btn-icon edit-only" id="settingsBtn" title="GitHub settings">⚙</button>
+    <button class="btn btn-icon" id="settingsBtn" title="Settings">⚙</button>
   </div>
 </div>
 
@@ -799,6 +799,10 @@
         Create one here
       </a> — only the <code>repo</code> scope is needed.
     </p>
+    <div class="field">
+      <label>Edit Password &nbsp;<span class="tag">stored locally only</span></label>
+      <input type="password" id="cfgPassword" placeholder="Enter password to enable editing" />
+    </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" id="settingsCancel">Cancel</button>
       <button class="btn btn-primary" id="settingsSave">Save</button>
@@ -835,11 +839,15 @@ let state = {
 };
 
 let cfg = {
-  owner:  localStorage.getItem('gh_owner')  || '',
-  repo:   localStorage.getItem('gh_repo')   || '',
-  branch: localStorage.getItem('gh_branch') || 'main',
-  token:  localStorage.getItem('gh_token')  || '',
+  owner:    localStorage.getItem('gh_owner')    || '',
+  repo:     localStorage.getItem('gh_repo')     || '',
+  branch:   localStorage.getItem('gh_branch')   || 'main',
+  token:    localStorage.getItem('gh_token')    || '',
+  password: localStorage.getItem('gh_password') || '',
 };
+
+const EDIT_PASSWORD = 'GrowthIsGood';
+function canEdit() { return cfg.password === EDIT_PASSWORD && !IS_READONLY; }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
@@ -1715,22 +1723,26 @@ async function pushToGitHub() {
 
 // ── Settings ─────────────────────────────────────────────────────────────────
 function openSettings() {
-  document.getElementById('cfgOwner').value  = cfg.owner;
-  document.getElementById('cfgRepo').value   = cfg.repo;
-  document.getElementById('cfgBranch').value = cfg.branch || 'main';
-  document.getElementById('cfgToken').value  = cfg.token;
+  document.getElementById('cfgOwner').value    = cfg.owner;
+  document.getElementById('cfgRepo').value     = cfg.repo;
+  document.getElementById('cfgBranch').value   = cfg.branch || 'main';
+  document.getElementById('cfgToken').value    = cfg.token;
+  document.getElementById('cfgPassword').value = cfg.password;
   document.getElementById('settingsOverlay').classList.add('open');
 }
 
 function saveSettings() {
-  cfg.owner  = document.getElementById('cfgOwner').value.trim();
-  cfg.repo   = document.getElementById('cfgRepo').value.trim();
-  cfg.branch = document.getElementById('cfgBranch').value.trim() || 'main';
-  cfg.token  = document.getElementById('cfgToken').value.trim();
-  localStorage.setItem('gh_owner',  cfg.owner);
-  localStorage.setItem('gh_repo',   cfg.repo);
-  localStorage.setItem('gh_branch', cfg.branch);
-  localStorage.setItem('gh_token',  cfg.token);
+  cfg.owner    = document.getElementById('cfgOwner').value.trim();
+  cfg.repo     = document.getElementById('cfgRepo').value.trim();
+  cfg.branch   = document.getElementById('cfgBranch').value.trim() || 'main';
+  cfg.token    = document.getElementById('cfgToken').value.trim();
+  cfg.password = document.getElementById('cfgPassword').value;
+  localStorage.setItem('gh_owner',    cfg.owner);
+  localStorage.setItem('gh_repo',     cfg.repo);
+  localStorage.setItem('gh_branch',   cfg.branch);
+  localStorage.setItem('gh_token',    cfg.token);
+  localStorage.setItem('gh_password', cfg.password);
+  document.body.classList.toggle('readonly', !canEdit());
   document.getElementById('settingsOverlay').classList.remove('open');
   if (cfg.owner && cfg.repo) {
     setSyncStatus('ok', `${cfg.owner}/${cfg.repo}`);
@@ -2070,8 +2082,8 @@ if (!cfg.owner && window.location.hostname.endsWith('.github.io')) {
 initCustomColorControls();
 if (!IS_READONLY) loadLocal();
 
-// Apply readonly mode before first render
-if (IS_READONLY) document.body.classList.add('readonly');
+// Apply readonly mode — either forced via URL param or password not entered
+if (!canEdit()) document.body.classList.add('readonly');
 
 render();
 
