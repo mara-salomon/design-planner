@@ -1,5 +1,11 @@
 {
   "events": [],
-  "projects": [],
+  "projects": [
+    {
+      "id": "mqjayn8d9vu8l4e812",
+      "name": "Podcast [EAI Pulse/The Backlog]",
+      "color": "#3b82f6"
+    }
+  ],
   "dayNotes": {}
 }
