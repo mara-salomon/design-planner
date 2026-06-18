@@ -642,7 +642,7 @@
       <span class="sync-dot" id="syncDot"></span>
       <span id="syncText">not configured</span>
     </span>
-    <button class="btn btn-primary edit-only" id="syncBtn">↑ Sync</button>
+    <button class="btn btn-primary edit-only" id="syncBtn">Save now</button>
     <button class="btn btn-icon edit-only" id="settingsBtn" title="GitHub settings">⚙</button>
   </div>
 </div>
@@ -1620,20 +1620,20 @@ function startNoteEdit(noteSpan, ds) {
   });
 }
 
+let _pushTimer = null;
+
 function autoSaveLocal() {
   localStorage.setItem('planner_events',   JSON.stringify(state.events));
   localStorage.setItem('planner_projects', JSON.stringify(state.projects));
   localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
-  localStorage.setItem('planner_dirty',    'true');
-  if (cfg.owner && cfg.repo) setSyncStatus('warn', 'unsaved changes');
+  scheduleGitHubPush();
 }
 
-function saveLocalClean() {
-  // Save to localStorage without marking dirty — used after sync or loading from GitHub
-  localStorage.setItem('planner_events',   JSON.stringify(state.events));
-  localStorage.setItem('planner_projects', JSON.stringify(state.projects));
-  localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
-  localStorage.setItem('planner_dirty',    'false');
+function scheduleGitHubPush() {
+  if (!cfg.owner || !cfg.repo || !cfg.token || IS_READONLY) return;
+  setSyncStatus('warn', 'saving…');
+  clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(pushToGitHub, 2000);
 }
 
 function loadLocal() {
@@ -1676,9 +1676,11 @@ async function loadFromGitHub() {
     if (Array.isArray(json.projects)) state.projects = json.projects;
     if (json.dayNotes && typeof json.dayNotes === 'object') state.dayNotes = json.dayNotes;
     ensureOrders();
-    saveLocalClean();
+    localStorage.setItem('planner_events',   JSON.stringify(state.events));
+    localStorage.setItem('planner_projects', JSON.stringify(state.projects));
+    localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
     render();
-    setSyncStatus('ok', 'synced');
+    setSyncStatus('ok', 'saved ✓');
   } catch(e) {
     setSyncStatus('err', 'load failed');
     console.error(e);
@@ -1731,8 +1733,7 @@ async function pushToGitHub() {
     }
 
     if (!putR.ok) { const e = await putR.json(); throw new Error(e.message || putR.status); }
-    saveLocalClean();
-    setSyncStatus('ok', 'synced ✓');
+    setSyncStatus('ok', 'saved ✓');
   } catch(e) {
     setSyncStatus('err', 'sync failed');
     console.error(e);
@@ -2051,7 +2052,10 @@ document.getElementById('dayOverlay').addEventListener('click', e => {
 });
 
 // Settings
-document.getElementById('syncBtn').addEventListener('click', pushToGitHub);
+document.getElementById('syncBtn').addEventListener('click', () => {
+  clearTimeout(_pushTimer);
+  pushToGitHub();
+});
 document.getElementById('settingsBtn').addEventListener('click', openSettings);
 document.getElementById('settingsSave').addEventListener('click', saveSettings);
 document.getElementById('settingsCancel').addEventListener('click', () => {
@@ -2145,12 +2149,7 @@ if (LOCKED_VIEW) {
 }
 
 if (cfg.owner && cfg.repo) {
-  const isDirty = localStorage.getItem('planner_dirty') === 'true';
-  if (isDirty) {
-    setSyncStatus('warn', 'unsaved changes');
-  } else {
-    loadFromGitHub();
-  }
+  loadFromGitHub();
 } else {
   setSyncStatus('', 'not configured');
 }
