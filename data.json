@@ -216,6 +216,14 @@
       "date": "2026-06-19",
       "projectId": "mqjc99tu3xnyv059ar2",
       "order": 30
+    },
+    {
+      "id": "mqjcm9fc2b42zujuu4q",
+      "title": "[AI CoE] Whitepaper",
+      "date": "2026-06-22",
+      "endDate": "2026-06-24",
+      "projectId": "mqjcm2906l5aycactzb",
+      "order": 31
     }
   ],
   "projects": [
