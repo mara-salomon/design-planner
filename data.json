@@ -1,5 +1,13 @@
 {
-  "events": [],
+  "events": [
+    {
+      "id": "mqjayr51i0tb9yeu528",
+      "title": "EAI Pulse Podcast Episode",
+      "date": "2026-06-01",
+      "projectId": "mqjayn8d9vu8l4e812",
+      "order": 0
+    }
+  ],
   "projects": [
     {
       "id": "mqjayn8d9vu8l4e812",
