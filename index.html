@@ -636,6 +636,9 @@
       <span id="syncText">not configured</span>
     </span>
     <button class="btn btn-primary edit-only" id="syncBtn">Save now</button>
+    <button class="btn btn-icon" id="shareBtn" title="Share capacity">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    </button>
     <button class="btn btn-icon" id="settingsBtn" title="Settings">⚙</button>
   </div>
 </div>
@@ -767,6 +770,23 @@
   </div>
 </div>
 
+
+<!-- ── Share confirm modal ── -->
+<div class="overlay" id="shareConfirmOverlay">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">Share Workload</span>
+      <button class="modal-close" id="shareConfirmClose">✕</button>
+    </div>
+    <div class="modal-body" style="padding-bottom:20px">
+      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px">Select the time range to share:</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary" id="shareThisMonth" style="width:100%;padding:10px 16px">This month only</button>
+        <button class="btn" id="shareThisAndNext" style="width:100%;padding:10px 16px">This and next month</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ── Settings panel ── -->
 <div class="settings-overlay" id="settingsOverlay">
@@ -2088,6 +2108,155 @@ if (!cfg.owner && window.location.hostname.endsWith('.github.io')) {
   cfg.branch = cfg.branch || 'main';
 }
 
+
+// ── Share capacity output ─────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getWeekMonday(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  const day = dt.getDay(); // 0=Sun
+  dt.setDate(dt.getDate() - (day === 0 ? 6 : day - 1));
+  return dt;
+}
+
+function fmtMonday(dt) {
+  return dt.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function buildShareHtml(monthRange) {
+  // monthRange: 'this' = current month only, 'both' = current + next month
+  const projMap = {};
+  state.projects.forEach(p => { projMap[p.id] = p; });
+
+  const todayDateStr = todayStr();
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  const thisMonth = now.getMonth(); // 0-indexed
+
+  // Compute last day of allowed range
+  let rangeEnd;
+  if (monthRange === 'both') {
+    const nextMonth = (thisMonth + 1) % 12;
+    const nextYear  = thisMonth === 11 ? thisYear + 1 : thisYear;
+    const lastDay   = new Date(nextYear, nextMonth + 1, 0).getDate();
+    rangeEnd = `${String(nextYear).padStart(4,'0')}-${String(nextMonth+1).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+  } else {
+    const lastDay = new Date(thisYear, thisMonth + 1, 0).getDate();
+    rangeEnd = `${String(thisYear).padStart(4,'0')}-${String(thisMonth+1).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+  }
+
+  // Non-accomplished, within range, not in past weeks
+  const events = state.events
+    .filter(e => {
+      const deadline = e.endDate || e.date;
+      return !e.accomplished && deadline >= todayDateStr && deadline <= rangeEnd;
+    })
+    .slice()
+    .sort((a, b) => {
+      const da = a.endDate || a.date;
+      const db = b.endDate || b.date;
+      return da < db ? -1 : da > db ? 1 : 0;
+    });
+
+  // Group by week (Monday of deadline week), skipping weeks fully in the past
+  const thisWeekMonday = getWeekMonday(todayDateStr).toISOString().slice(0, 10);
+  const groups = [];
+  const groupIndex = {};
+  events.forEach(ev => {
+    const deadline = ev.endDate || ev.date;
+    const mon = getWeekMonday(deadline);
+    const key = mon.toISOString().slice(0, 10);
+    if (key < thisWeekMonday) return; // skip past weeks
+    if (!groupIndex[key]) {
+      groupIndex[key] = { label: 'Week of ' + fmtMonday(mon), items: [] };
+      groups.push(groupIndex[key]);
+    }
+    groupIndex[key].items.push(ev);
+  });
+
+  const todayLabel = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const groupsHTML = groups.length
+    ? groups.map(g => `
+    <div class="wg">
+      <div class="wg-head">${escHtml(g.label)}</div>
+      ${g.items.map(ev => {
+        const proj = projMap[ev.projectId];
+        const color = proj?.color || '#94a3b8';
+        const label = proj?.name ? 'Task for ' + proj.name : (ev.name || 'Unassigned task');
+        return `<div class="tr"><span class="dot" style="background:${color}"></span><span class="tn">${escHtml(label)}</span></div>`;
+      }).join('')}
+    </div>`).join('')
+    : '<p class="empty">No upcoming tasks.</p>';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Design Capacity Snapshot</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
+.page{max-width:640px;margin:0 auto;padding:40px 24px}
+.ph{margin-bottom:32px;padding-bottom:20px;border-bottom:2px solid #e2e8f0}
+.pt{font-size:1.4rem;font-weight:700}
+.ps{font-size:0.82rem;color:#94a3b8;margin-top:4px}
+.wg{margin-bottom:28px}
+.wg-head{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;padding-bottom:8px;border-bottom:1px solid #e2e8f0;margin-bottom:4px}
+.tr{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f1f5f9}
+.tr:last-child{border-bottom:none}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tn{font-size:0.88rem;color:#334155}
+.empty{color:#94a3b8;font-style:italic;font-size:.9rem;padding:16px 0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="ph">
+    <div class="pt">Design Planner</div>
+    <div class="ps">Capacity snapshot &mdash; ${todayLabel}</div>
+  </div>
+  ${groupsHTML}
+</div>
+</body>
+</html>`;
+}
+
+function downloadShareHtml(monthRange) {
+  const html = buildShareHtml(monthRange);
+  const date = new Date().toISOString().slice(0, 10);
+  const suffix = monthRange === 'both' ? 'this-and-next-month' : 'this-month';
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `capacity-snapshot-${suffix}-${date}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+document.getElementById('shareBtn').addEventListener('click', () => {
+  document.getElementById('shareConfirmOverlay').classList.add('open');
+});
+document.getElementById('shareConfirmClose').addEventListener('click', () => {
+  document.getElementById('shareConfirmOverlay').classList.remove('open');
+});
+document.getElementById('shareThisMonth').addEventListener('click', () => {
+  document.getElementById('shareConfirmOverlay').classList.remove('open');
+  downloadShareHtml('this');
+});
+document.getElementById('shareThisAndNext').addEventListener('click', () => {
+  document.getElementById('shareConfirmOverlay').classList.remove('open');
+  downloadShareHtml('both');
+});
+document.getElementById('shareConfirmOverlay').addEventListener('click', e => {
+  if (e.target.id === 'shareConfirmOverlay') document.getElementById('shareConfirmOverlay').classList.remove('open');
+});
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 initCustomColorControls();
