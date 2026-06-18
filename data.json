@@ -239,21 +239,21 @@
       "date": "2026-06-24",
       "endDate": "2026-06-26",
       "projectId": "mqjcm2906l5aycactzb",
-      "order": 35
+      "order": 34
     },
     {
       "id": "mqjcmxpzvn7cayxiey",
       "title": "[Pharma] LI Post 2",
       "date": "2026-06-25",
       "projectId": "mqjc7yok5wsh805ver6",
-      "order": 36
+      "order": 35
     },
     {
       "id": "mqjcn6aoj90nqhtgb1",
       "title": "[Pharma] IG Post 1",
       "date": "2026-06-25",
       "projectId": "mqjc7yok5wsh805ver6",
-      "order": 37
+      "order": 36
     },
     {
       "id": "mqjcnbj0pk5hm4aw6nb",
@@ -381,7 +381,7 @@
       "title": "[Miro Partnership] Why 70% of your AI success has nothing to do with AI",
       "date": "2026-06-26",
       "projectId": "mqjc99tu3xnyv059ar2",
-      "order": 53
+      "order": 37
     }
   ],
   "projects": [
