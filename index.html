@@ -799,10 +799,6 @@
         Create one here
       </a> — only the <code>repo</code> scope is needed.
     </p>
-    <div class="field">
-      <label>Edit Password &nbsp;<span class="tag">stored locally only</span></label>
-      <input type="password" id="cfgPassword" placeholder="Enter password to enable editing" />
-    </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" id="settingsCancel">Cancel</button>
       <button class="btn btn-primary" id="settingsSave">Save</button>
@@ -843,11 +839,9 @@ let cfg = {
   repo:     localStorage.getItem('gh_repo')     || '',
   branch:   localStorage.getItem('gh_branch')   || 'main',
   token:    localStorage.getItem('gh_token')    || '',
-  password: localStorage.getItem('gh_password') || '',
 };
 
-const EDIT_PASSWORD = 'GrowthIsGood';
-function canEdit() { return cfg.password === EDIT_PASSWORD && !IS_READONLY; }
+function canEdit() { return !!cfg.token && !IS_READONLY; }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
@@ -1727,7 +1721,6 @@ function openSettings() {
   document.getElementById('cfgRepo').value     = cfg.repo;
   document.getElementById('cfgBranch').value   = cfg.branch || 'main';
   document.getElementById('cfgToken').value    = cfg.token;
-  document.getElementById('cfgPassword').value = cfg.password;
   document.getElementById('settingsOverlay').classList.add('open');
 }
 
@@ -1736,12 +1729,10 @@ function saveSettings() {
   cfg.repo     = document.getElementById('cfgRepo').value.trim();
   cfg.branch   = document.getElementById('cfgBranch').value.trim() || 'main';
   cfg.token    = document.getElementById('cfgToken').value.trim();
-  cfg.password = document.getElementById('cfgPassword').value;
-  localStorage.setItem('gh_owner',    cfg.owner);
-  localStorage.setItem('gh_repo',     cfg.repo);
-  localStorage.setItem('gh_branch',   cfg.branch);
-  localStorage.setItem('gh_token',    cfg.token);
-  localStorage.setItem('gh_password', cfg.password);
+  localStorage.setItem('gh_owner',  cfg.owner);
+  localStorage.setItem('gh_repo',   cfg.repo);
+  localStorage.setItem('gh_branch', cfg.branch);
+  localStorage.setItem('gh_token',  cfg.token);
   document.body.classList.toggle('readonly', !canEdit());
   document.getElementById('settingsOverlay').classList.remove('open');
   if (cfg.owner && cfg.repo) {
