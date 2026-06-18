@@ -80,6 +80,7 @@
   .sync-dot.ok   { background: var(--green); }
   .sync-dot.err  { background: var(--red); }
   .sync-dot.busy { background: #f59e0b; animation: pulse .8s infinite; }
+  .sync-dot.warn { background: #f59e0b; }
   @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
 
   /* ── Calendar ── */
@@ -1623,6 +1624,7 @@ function autoSaveLocal() {
   localStorage.setItem('planner_events',   JSON.stringify(state.events));
   localStorage.setItem('planner_projects', JSON.stringify(state.projects));
   localStorage.setItem('planner_dayNotes', JSON.stringify(state.dayNotes));
+  if (cfg.owner && cfg.repo) setSyncStatus('warn', 'unsaved changes');
 }
 
 function loadLocal() {
