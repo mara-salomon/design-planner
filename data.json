@@ -324,5 +324,7 @@
       "color": "#8b5cf6"
     }
   ],
-  "dayNotes": {}
+  "dayNotes": {
+    "2026-06-30": "Send Timesheet"
+  }
 }
