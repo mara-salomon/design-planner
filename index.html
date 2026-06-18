@@ -1649,14 +1649,16 @@ async function loadFromGitHub() {
   if (!cfg.owner || !cfg.repo) return;
   setSyncStatus('busy', 'loading…');
   try {
-    const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/data.json?t=${Date.now()}`;
-    const r   = await fetch(url);
+    const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json?ref=${cfg.branch}`;
+    const headers = { 'Accept': 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' };
+    if (cfg.token) headers['Authorization'] = `token ${cfg.token}`;
+    const r = await fetch(apiUrl, { headers, cache: 'no-store' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const json = await r.json();
+    const meta = await r.json();
+    const json = JSON.parse(decodeURIComponent(escape(atob(meta.content.replace(/\s/g, '')))));
     const remoteHasData = (Array.isArray(json.events) && json.events.length > 0)
                        || (Array.isArray(json.projects) && json.projects.length > 0);
     const localHasData  = state.events.length > 0 || state.projects.length > 0;
-    // Never silently wipe existing local data with an empty remote file
     if (!remoteHasData && localHasData) {
       setSyncStatus('ok', `${cfg.owner}/${cfg.repo}`);
       return;
