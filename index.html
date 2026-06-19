@@ -1822,6 +1822,8 @@ async function loadFromGitHub() {
     state.dayNotes = remoteDayNotes;
     ensureOrders();
     render();
+    if (state.view === 'overview') renderOverviewView();
+    else if (state.view === 'list') renderListView();
     setSyncStatus('ok', 'ready');
   } catch(e) {
     setSyncStatus('err', 'load failed');
