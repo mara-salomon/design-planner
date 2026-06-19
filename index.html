@@ -945,6 +945,19 @@ let state = {
   dayTarget: null,
 };
 
+// Auto-detect owner/repo from GitHub Pages URL (https://{owner}.github.io/{repo}/)
+// so viewers on a fresh browser can still load data without configuring settings.
+(function() {
+  const h = window.location.hostname; // e.g. mara-salomon.github.io
+  const ghPagesMatch = h.match(/^([^.]+)\.github\.io$/);
+  if (ghPagesMatch && !localStorage.getItem('gh_owner')) {
+    const detectedOwner = ghPagesMatch[1];
+    const detectedRepo  = window.location.pathname.replace(/^\/|\/$/g, '') || detectedOwner;
+    localStorage.setItem('gh_owner', detectedOwner);
+    localStorage.setItem('gh_repo',  detectedRepo);
+  }
+})();
+
 let cfg = {
   owner:    localStorage.getItem('gh_owner')    || '',
   repo:     localStorage.getItem('gh_repo')     || '',
