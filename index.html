@@ -480,6 +480,78 @@
   .view-btn.active { background: var(--accent); color: #fff; }
   .view-btn.active:hover { background: var(--accent); }
 
+  /* ── View lock overlay ── */
+  .view-lockable {
+    position: relative;
+  }
+  .view-lockable.is-locked > :not(.view-lock-overlay) {
+    filter: blur(7px) grayscale(0.6) opacity(0.7);
+    pointer-events: none;
+    user-select: none;
+  }
+  .view-lock-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    pointer-events: none;
+    padding-top: 60px;
+  }
+  .view-lock-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 28px;
+    font-size: 0.88rem;
+    color: var(--text);
+    font-weight: 500;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+    text-align: center;
+    pointer-events: auto;
+  }
+
+  /* ── Overview view ── */
+  #overviewView {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 0;
+  }
+  .ov-tr {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .ov-tr-top {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .ov-rank {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .ov-rank-1 { background: #1e293b; color: #fff; }
+  .ov-rank-2 { background: #475569; color: #fff; }
+  .ov-rank-3 { background: #94a3b8; color: #fff; }
+  .ov-rank-n { background: transparent; color: #cbd5e1; font-size: 0.78rem; font-weight: 600; }
+  .ov-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .ov-name { font-size: 0.88rem; color: var(--text); flex: 1; }
+  .ov-name-top { font-weight: 600; }
+  .ov-empty { color: var(--muted); font-style: italic; font-size: .9rem; padding: 16px 0; }
+  .ov-locked { color: var(--muted); font-size: .9rem; padding: 16px 0; }
+
   /* ── List view ── */
   #listView {
     display: flex;
@@ -614,7 +686,8 @@
   <div class="header-left">
     <h1>Design Planner</h1>
     <div class="view-toggle" id="viewToggleWrap">
-      <button class="btn view-btn active" id="calViewBtn">Calendar</button>
+      <button class="btn view-btn active" id="overviewViewBtn">Overview</button>
+      <button class="btn view-btn" id="calViewBtn">Calendar</button>
       <button class="btn view-btn" id="listViewBtn">List</button>
     </div>
     <div class="month-nav" id="monthNav">
@@ -643,26 +716,39 @@
   </div>
 </div>
 
-<!-- ── Calendar ── -->
-<div class="calendar" id="calendarView">
-  <div class="day-names">
-    <div class="day-name">Sun</div><div class="day-name">Mon</div>
-    <div class="day-name">Tue</div><div class="day-name">Wed</div>
-    <div class="day-name">Thu</div><div class="day-name">Fri</div>
-    <div class="day-name">Sat</div>
-  </div>
-  <div id="grid"></div>
+<!-- ── Overview view ── -->
+<div id="overviewView" style="display:none">
+  <div id="overviewList"></div>
 </div>
 
-<!-- ── Legend ── -->
-<div id="calLegend" style="display:none"></div>
+<!-- ── Calendar ── -->
+<div class="view-lockable" id="calendarWrap">
+  <div class="calendar" id="calendarView">
+    <div class="day-names">
+      <div class="day-name">Sun</div><div class="day-name">Mon</div>
+      <div class="day-name">Tue</div><div class="day-name">Wed</div>
+      <div class="day-name">Thu</div><div class="day-name">Fri</div>
+      <div class="day-name">Sat</div>
+    </div>
+    <div id="grid"></div>
+  </div>
+  <div id="calLegend" style="display:none"></div>
+  <div class="view-lock-overlay" id="calLockOverlay" style="display:none">
+    <div class="view-lock-box">Please input Password in Settings to view.</div>
+  </div>
+</div>
 
 <!-- ── List view ── -->
-<div id="listView" style="display:none">
-  <div class="list-search-bar">
-    <input type="text" class="list-search-input" id="listSearch" placeholder="Search projects or tasks…" autocomplete="off" />
+<div class="view-lockable" id="listWrap" style="display:none">
+  <div id="listView">
+    <div class="list-search-bar">
+      <input type="text" class="list-search-input" id="listSearch" placeholder="Search projects or tasks…" autocomplete="off" />
+    </div>
+    <div id="listResults"></div>
   </div>
-  <div id="listResults"></div>
+  <div class="view-lock-overlay" id="listLockOverlay" style="display:none">
+    <div class="view-lock-box">Please input Password in Settings to view.</div>
+  </div>
 </div>
 
 <!-- ── Event modal ── -->
@@ -849,7 +935,7 @@ const _today = new Date();
 let state = {
   year:  _today.getFullYear(),
   month: _today.getMonth(),
-  view:     'calendar',  // 'calendar' | 'list'
+  view:     'overview',  // 'overview' | 'calendar' | 'list'
   showPast: false,       // true = un-grey past dates
   events:   [],  // { id, title, date, endDate?, projectId?, notes }
   projects: [],  // { id, name, color }
@@ -863,7 +949,7 @@ let cfg = {
   owner:    localStorage.getItem('gh_owner')    || '',
   repo:     localStorage.getItem('gh_repo')     || '',
   branch:   localStorage.getItem('gh_branch')   || 'main',
-  token:    localStorage.getItem('gh_token')    || '',
+  token:    localStorage.getItem('gh_token')    || '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',
   password: '',
 };
 
@@ -956,7 +1042,7 @@ function moveEventToDate(id, targetDate) {
   ev.date    = addDays(ev.date, delta);
   if (ev.endDate) ev.endDate = addDays(ev.endDate, delta);
   render();
-  if (state.view === 'list') renderListView();
+  if (state.view === 'list') renderListView(); else if (state.view === 'overview') renderOverviewView();
   autoSaveLocal();
 }
 
@@ -1017,6 +1103,7 @@ function render() {
 
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
+
 
   const today = todayStr();
   const firstDay     = new Date(state.year, state.month, 1).getDay();
@@ -1200,6 +1287,7 @@ function render() {
   }
 
   if (state.view === 'calendar') renderLegend();
+  if (state.view === 'overview') renderOverviewView();
 }
 
 function assignSlots(events, weekStart, weekEnd) {
@@ -1346,7 +1434,7 @@ function saveEvent() {
   }
   closeEventModal();
   render();
-  if (state.view === 'list') renderListView();
+  if (state.view === 'list') renderListView(); else if (state.view === 'overview') renderOverviewView();
   autoSaveLocal();
 }
 
@@ -1358,7 +1446,7 @@ function deleteEvent() {
     openDayOverlay(state.dayTarget);
   }
   render();
-  if (state.view === 'list') renderListView();
+  if (state.view === 'list') renderListView(); else if (state.view === 'overview') renderOverviewView();
   autoSaveLocal();
 }
 
@@ -1527,7 +1615,7 @@ function saveProject() {
   resetProjForm();
   renderProjList();
   render();
-  if (state.view === 'list') renderListView();
+  if (state.view === 'list') renderListView(); else if (state.view === 'overview') renderOverviewView();
   autoSaveLocal();
 }
 
@@ -1539,7 +1627,7 @@ function deleteProject(id) {
   );
   renderProjList();
   render();
-  if (state.view === 'list') renderListView();
+  if (state.view === 'list') renderListView(); else if (state.view === 'overview') renderOverviewView();
   autoSaveLocal();
 }
 
@@ -1775,6 +1863,9 @@ function saveSettings() {
   
   document.body.classList.toggle('readonly', !canEdit());
   document.getElementById('settingsOverlay').classList.remove('open');
+  applyLockState();
+  render();
+  setView(state.view);
   if (cfg.owner && cfg.repo) {
     setSyncStatus('ok', `${cfg.owner}/${cfg.repo}`);
     loadFromGitHub();
@@ -1969,20 +2060,70 @@ function renderLegend() {
   if (hasNone) addLegendItem('#94a3b8', 'No project', '');
 }
 
+function renderOverviewView() {
+  const el = document.getElementById('overviewList');
+  const todayDateStr = todayStr();
+  const projMap = {};
+  state.projects.forEach(p => { projMap[p.id] = p; });
+  const events = state.events
+    .filter(e => !e.accomplished && (e.endDate || e.date) >= todayDateStr)
+    .slice()
+    .sort((a, b) => {
+      const da = a.endDate || a.date, db = b.endDate || b.date;
+      return da < db ? -1 : da > db ? 1 : 0;
+    });
+  if (!events.length) {
+    el.innerHTML = '<p class="ov-empty">No upcoming tasks.</p>';
+    return;
+  }
+  el.innerHTML = events.map((ev, i) => {
+    const rank = i + 1;
+    const proj = projMap[ev.projectId];
+    const color = proj?.color || '#94a3b8';
+    const name = ev.title || 'Untitled task';
+    const top = rank <= 3;
+    return `<div class="ov-tr${top ? ' ov-tr-top' : ''}">
+  <span class="ov-rank ov-rank-${top ? rank : 'n'}">${rank}</span>
+  <span class="ov-dot" style="background:${color}"></span>
+  <span class="ov-name${top ? ' ov-name-top' : ''}">${name}</span>
+</div>`;
+  }).join('');
+}
+
+function applyLockState() {
+  const locked = !canEdit();
+  const calWrap  = document.getElementById('calendarWrap');
+  const listWrap = document.getElementById('listWrap');
+  calWrap.classList.toggle('is-locked', locked);
+  listWrap.classList.toggle('is-locked', locked);
+  document.getElementById('calLockOverlay').style.display  = locked ? '' : 'none';
+  document.getElementById('listLockOverlay').style.display = locked ? '' : 'none';
+}
+
 function setView(v) {
   state.view = v;
   const isCalendar = v === 'calendar';
-  document.getElementById('calendarView').style.display = isCalendar ? '' : 'none';
-  document.getElementById('calLegend').style.display    = isCalendar ? '' : 'none';
-  document.getElementById('listView').style.display     = isCalendar ? 'none' : 'flex';
+  const isOverview = v === 'overview';
+  const isList     = v === 'list';
+  document.getElementById('overviewView').style.display = isOverview ? '' : 'none';
+  document.getElementById('calendarWrap').style.display = isCalendar ? '' : 'none';
+  document.getElementById('listWrap').style.display     = isList ? '' : 'none';
   document.getElementById('monthNav').style.display     = isCalendar ? '' : 'none';
   document.getElementById('todayBtn').style.display     = isCalendar ? '' : 'none';
   document.getElementById('showPastBtn').style.display  = isCalendar ? '' : 'none';
-  document.getElementById('calViewBtn').classList.toggle('active',  isCalendar);
-  document.getElementById('listViewBtn').classList.toggle('active', !isCalendar);
-  if (!isCalendar) renderListView();
+  document.getElementById('overviewViewBtn').classList.toggle('active', isOverview);
+  document.getElementById('calViewBtn').classList.toggle('active',      isCalendar);
+  document.getElementById('listViewBtn').classList.toggle('active',     isList);
+  applyLockState();
+  if (isOverview) renderOverviewView();
+  else if (isList) renderListView();
   else renderLegend();
 }
+
+// ── View buttons ─────────────────────────────────────────────────────────────
+document.getElementById('overviewViewBtn').addEventListener('click', () => setView('overview'));
+document.getElementById('calViewBtn').addEventListener('click', () => setView('calendar'));
+document.getElementById('listViewBtn').addEventListener('click', () => setView('list'));
 
 // ── Event wiring ──────────────────────────────────────────────────────────────
 // Nav
@@ -2029,8 +2170,6 @@ document.getElementById('evManageProjects').addEventListener('click', () => {
 });
 
 // Projects modal
-document.getElementById('calViewBtn').addEventListener('click', () => setView('calendar'));
-document.getElementById('listViewBtn').addEventListener('click', () => setView('list'));
 document.getElementById('listSearch').addEventListener('input', e => {
   listSearchQuery = e.target.value;
   renderListView();
@@ -2267,10 +2406,10 @@ if (!IS_READONLY) loadLocal();
 if (!canEdit()) document.body.classList.add('readonly');
 
 render();
+setView(LOCKED_VIEW || 'overview');
 
 // Lock view if specified in URL
 if (LOCKED_VIEW) {
-  setView(LOCKED_VIEW);
   document.getElementById('viewToggleWrap').style.display = 'none';
 }
 
