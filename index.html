@@ -485,6 +485,7 @@
     position: relative;
   }
   .view-lockable.is-locked > :not(.view-lock-overlay) {
+    filter: blur(3px) opacity(0.85);
     pointer-events: none;
     user-select: none;
   }
@@ -2082,6 +2083,20 @@ function renderLegend() {
   if (!projects.length && !hasNone) { el.style.display = 'none'; return; }
 
   el.style.display = '';
+
+  if (!canEdit()) {
+    const count = projects.length + (hasNone ? 1 : 0);
+    const barWidths = ['64px','80px','52px','72px','60px','76px'];
+    const bars = Array.from({length: count}, (_, i) =>
+      `<div class="legend-item" style="pointer-events:none">
+        <div class="legend-dot" style="background:#e2e8f0"></div>
+        <div style="height:9px;border-radius:3px;background:#e2e8f0;width:${barWidths[i % barWidths.length]}"></div>
+      </div>`
+    ).join('');
+    el.innerHTML = `<div class="legend-title">This month</div><div class="legend-items">${bars}</div>`;
+    return;
+  }
+
   el.innerHTML = `<div class="legend-title">This month</div><div class="legend-items" id="legendItems"></div>`;
   const items = document.getElementById('legendItems');
 
