@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -677,9 +678,109 @@
     .cell { min-height: 80px; }
     h1 { font-size: 1.1rem; }
   }
+  /* ── Site access gate ── */
+  #accessGate {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  #accessGate.hidden { display: none; }
+  .gate-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    padding: 48px 40px 40px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .gate-logo {
+    width: 52px;
+    height: 52px;
+    background: var(--accent);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .gate-logo svg { color: #fff; }
+  .gate-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+  }
+  .gate-subtitle {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-bottom: 32px;
+  }
+  .gate-input-wrap {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .gate-input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color .15s;
+    box-sizing: border-box;
+    background: #f8fafc;
+    color: #1e293b;
+    letter-spacing: 0.08em;
+  }
+  .gate-input:focus { border-color: var(--accent); background: #fff; }
+  .gate-input.error { border-color: #ef4444; }
+  .gate-error {
+    font-size: 0.8rem;
+    color: #ef4444;
+    margin-bottom: 16px;
+    min-height: 18px;
+  }
+  .gate-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  .gate-btn:hover { background: #0284c7; }
+  .gate-btn:active { transform: scale(0.98); }
 </style>
 </head>
 <body>
+
+<!-- ── Access gate ── -->
+<div id="accessGate">
+  <div class="gate-card">
+    <div class="gate-logo">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <div class="gate-title">Design Planner</div>
+    <div class="gate-subtitle">Enter the access password to continue</div>
+    <div class="gate-input-wrap">
+      <input class="gate-input" id="gateInput" type="password" placeholder="Password" autocomplete="off" />
+    </div>
+    <div class="gate-error" id="gateError"></div>
+    <button class="gate-btn" id="gateBtn">Continue</button>
+  </div>
+</div>
 
 <!-- ── Header ── -->
 <div class="header">
@@ -907,7 +1008,7 @@
     </p>
     <div class="field">
       <label>Password</label>
-      <input type="password" id="cfgPassword" placeholder="Enter password to enable editing" />
+      <input type="password" id="cfgPassword" placeholder="Enter password for full access" />
       <div id="cfgPasswordError" style="display:none;color:#ef4444;font-size:0.8rem;margin-top:4px">Incorrect password.</div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -1818,8 +1919,8 @@ async function loadFromGitHub() {
     const remoteProjects = Array.isArray(json.projects) ? json.projects : [];
     const remoteDayNotes = (json.dayNotes && typeof json.dayNotes === 'object') ? json.dayNotes : {};
 
-    if (cfg.token) {
-      // Editor browser: local state is authoritative — never overwrite it from remote.
+    if (cfg.token && canEdit()) {
+      // Editor browser (has valid token + password): local state is authoritative.
       // Just push whatever is local so GitHub stays in sync.
       setSyncStatus('ok', 'ready');
       scheduleGitHubPush();
@@ -2482,6 +2583,40 @@ document.getElementById('shareThisAndNext').addEventListener('click', () => {
 document.getElementById('shareConfirmOverlay').addEventListener('click', e => {
   if (e.target.id === 'shareConfirmOverlay') document.getElementById('shareConfirmOverlay').classList.remove('open');
 });
+
+// ── Site access gate ─────────────────────────────────────────────────────────
+const SITE_PASSWORD = 'adaptinnovate';
+
+function unlockSite() {
+  document.getElementById('accessGate').classList.add('hidden');
+  document.getElementById('gateInput').value = '';
+}
+
+function checkGatePassword() {
+  const val = document.getElementById('gateInput').value;
+  const input = document.getElementById('gateInput');
+  const errorEl = document.getElementById('gateError');
+  if (val === SITE_PASSWORD) {
+    sessionStorage.setItem('site_unlocked', '1');
+    input.classList.remove('error');
+    errorEl.textContent = '';
+    unlockSite();
+  } else {
+    input.classList.add('error');
+    errorEl.textContent = 'Incorrect password. Please try again.';
+    input.select();
+  }
+}
+
+document.getElementById('gateBtn').addEventListener('click', checkGatePassword);
+document.getElementById('gateInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkGatePassword();
+});
+
+// Show gate unless already unlocked this session
+if (sessionStorage.getItem('site_unlocked') === '1') {
+  unlockSite();
+}
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 initCustomColorControls();
