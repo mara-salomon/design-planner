@@ -1,342 +1,438 @@
 {
   "events": [
     {
-      "id": "mqj62n87fmiatryhk7h",
+      "id": "mqjayr51i0tb9yeu528",
       "title": "EAI Pulse Podcast Episode",
       "date": "2026-06-01",
-      "projectId": "mqj2da8vlliq6q4s79",
+      "projectId": "mqjayn8d9vu8l4e812",
       "order": 0
     },
     {
-      "id": "mqj67vq2p9us2yru0r",
+      "id": "mqjbittw1rwkorkdm0ei",
       "title": "[ADV Web] Ad-hoc Requests",
       "date": "2026-06-01",
-      "projectId": "mqj2ke9metncs726ut7",
+      "projectId": "mqjbiqn35d5gh1a9oc6",
       "order": 1
     },
     {
-      "id": "mqj682txpu7sl80f4xo",
+      "id": "mqjblwjq2e96i7t4hta",
       "title": "[OMOTF] Infographic 1 - LI & IG",
       "date": "2026-06-01",
-      "projectId": "mqj2kttl0yhx7uxdvszq",
+      "projectId": "mqjblskrrovdclm7ai",
       "order": 2
     },
     {
-      "id": "mqj68bpx3pfjqi37ggz",
+      "id": "mqjbpe2vj5idlg2son",
       "title": "TechTarget Ghaleb Tile",
       "date": "2026-06-01",
-      "projectId": "mqj2l7d4wx6t6fmis3",
+      "projectId": "mqjbp8npoy216t0ob6",
       "order": 3
     },
     {
-      "id": "mqj6l0bhfuao0tdmlt",
+      "id": "mqjbz1d8xazsr8pe37",
       "title": "[OMOTF] Infographic 2 - LI & IG",
       "date": "2026-06-02",
-      "projectId": "mqj2kttl0yhx7uxdvszq",
+      "projectId": "mqjblskrrovdclm7ai",
       "order": 4
     },
     {
-      "id": "mqj6l8v26ybaqpd58ya",
-      "title": "[EAIxADV] Newsletter Tile",
+      "id": "mqjbzua2ve7xb16tfvj",
+      "title": "[EAIxADV] Newsletter",
       "date": "2026-06-02",
-      "projectId": "mqj2tv5kmkny05g7wxj",
+      "projectId": "mqjbzq71w0kh58p36el",
       "order": 5
     },
     {
-      "id": "mqj6ppo9b7b7i1bulta",
-      "title": "[ADV Web] Revisions",
+      "id": "mqjbzyaics0llhkayvm",
+      "title": "[OMOTF] Infographic 3 - LI & IG",
       "date": "2026-06-03",
-      "projectId": "mqj2ke9metncs726ut7",
+      "projectId": "mqjblskrrovdclm7ai",
       "order": 6
     },
     {
-      "id": "mqj6pwos4wnwluml6z8",
-      "title": "[OMOTF] Infographic 3 - LI & IG",
+      "id": "mqjc01zl24brc0pl6e6",
+      "title": "[ADV Web] Revisions",
       "date": "2026-06-03",
-      "projectId": "mqj2kttl0yhx7uxdvszq",
+      "projectId": "mqjbiqn35d5gh1a9oc6",
       "order": 7
     },
     {
-      "id": "mqj6y2jpxjdug0sb32e",
-      "title": "[US Energy] LI Post 6",
+      "id": "mqjc71cm49cdwv6xot1",
+      "title": "[US Energy ]LI Post 6",
       "date": "2026-06-04",
-      "projectId": "mqj2lzp4s5inkgz7tco",
+      "projectId": "mqjc6uluw5lr5ajp8cq",
       "order": 8
     },
     {
-      "id": "mqj725vyv7q0uxjgdj",
+      "id": "mqjc756fwp8xjx9vy6",
       "title": "[OMOTF] Article Design",
       "date": "2026-06-04",
-      "projectId": "mqj2kttl0yhx7uxdvszq",
+      "projectId": "mqjblskrrovdclm7ai",
       "order": 9
     },
     {
-      "id": "mqj74pe5ocsvvjav7cs",
+      "id": "mqjc7bvwbqaxstgmh4b",
       "title": "[OMOTF]  Infographics - Revision",
       "date": "2026-06-04",
-      "projectId": "mqj2kttl0yhx7uxdvszq",
+      "projectId": "mqjblskrrovdclm7ai",
       "order": 10
     },
     {
-      "id": "mqj7c12osnedbqdy3w",
+      "id": "mqjc7fnsuyk9vlsq3e8",
       "title": "[ADV Web] People Single Page",
       "date": "2026-06-05",
-      "projectId": "mqj2ke9metncs726ut7",
+      "projectId": "mqjbiqn35d5gh1a9oc6",
       "order": 11
     },
     {
-      "id": "mqj8lbvrb43ii3cx75n",
+      "id": "mqjc7mbj4pi11m35ebk",
       "title": "CIO Article Tile",
       "date": "2026-06-05",
-      "projectId": "mqj2l7d4wx6t6fmis3",
+      "projectId": "mqjbp8npoy216t0ob6",
       "order": 12
     },
     {
-      "id": "mqj8llr14gpcul0y7vj",
-      "title": "[Pharma] Design - Flyer",
+      "id": "mqjc7pqogjm18gzysaa",
+      "title": "[ADV Web] Ad-hoc Requests",
       "date": "2026-06-08",
-      "projectId": "mqj2mf3bx32wiy7qyi",
+      "projectId": "mqjbiqn35d5gh1a9oc6",
       "order": 13
     },
     {
-      "id": "mqj8ltwgsigw7yqk26g",
-      "title": "[EAI x ADV] LI Post 4",
+      "id": "mqjc83v68zv8pkf4nwv",
+      "title": "[Pharma] Design - Flyer",
       "date": "2026-06-08",
-      "projectId": "mqj2tv5kmkny05g7wxj",
+      "projectId": "mqjc7yok5wsh805ver6",
       "order": 14
     },
     {
-      "id": "mqj9d4owvfykhpmt5x",
-      "title": "[Pharma] Design - Flyer",
-      "date": "2026-06-09",
-      "projectId": "mqj2mf3bx32wiy7qyi",
+      "id": "mqjc882n81ng9iagv7l",
+      "title": "[EAI x ADV] LI Post 4",
+      "date": "2026-06-08",
+      "projectId": "mqjbzq71w0kh58p36el",
       "order": 15
     },
     {
-      "id": "mqj9dvu2kgx6aidrqo",
-      "title": "[Pharma] Design - Whitepaper",
-      "date": "2026-06-10",
-      "projectId": "mqj2mf3bx32wiy7qyi",
+      "id": "mqjc8d9eqc9i97u0bwr",
+      "title": "[Pharma] Design - Flyer",
+      "date": "2026-06-09",
+      "endDate": "2026-06-10",
+      "projectId": "mqjc7yok5wsh805ver6",
       "order": 16
     },
     {
-      "id": "mqj9e2c8x4g6tspl8z",
-      "title": "[Pharma] Design - Flyer",
+      "id": "mqjc8h4jx29e9ueamyk",
+      "title": "[Pharma] Design - Whitepaper",
       "date": "2026-06-10",
-      "projectId": "mqj2mf3bx32wiy7qyi",
+      "endDate": "2026-06-11",
+      "projectId": "mqjc7yok5wsh805ver6",
       "order": 17
     },
     {
-      "id": "mqj9f18ytyockajoeu",
+      "id": "mqjc9dxq610p0k1m11",
       "title": "[Miro Partnership] Beyond Adoption How High-Performing Teams Turn AI into Enterprise Value",
       "date": "2026-06-11",
-      "projectId": "mqj2mt55xd3pj9h68yg",
+      "projectId": "mqjc99tu3xnyv059ar2",
       "order": 18
     },
     {
-      "id": "mqj9f8lwe2ydgj997yf",
-      "title": "[Pharma] Design - Whitepaper",
-      "date": "2026-06-11",
-      "projectId": "mqj2mf3bx32wiy7qyi",
+      "id": "mqjc9tf84ruse0fqpxq",
+      "title": "OUT OF OFFICE",
+      "date": "2026-06-12",
       "order": 19
     },
     {
-      "id": "mqj9fbpm4vqkklw11w9",
-      "title": "OUT OF OFFICE",
-      "date": "2026-06-12",
+      "id": "mqjcjgpxul28bb55feb",
+      "title": "[Miro Partnership] From Chaos to Clarity Three Executive Levers to Build Resilient Growth",
+      "date": "2026-06-15",
+      "projectId": "mqjc99tu3xnyv059ar2",
       "order": 20
     },
     {
-      "id": "mqj9fkyxjitprv7pl29",
-      "title": "[Miro Partnership] From Chaos to Clarity Three Executive Levers to Build Resilient Growth",
+      "id": "mqjcjkihpw0m1344fk",
+      "title": "[OMOTF] Newsletter Tile",
       "date": "2026-06-15",
-      "projectId": "mqj2mt55xd3pj9h68yg",
+      "projectId": "mqjblskrrovdclm7ai",
       "order": 21
     },
     {
-      "id": "mqj9fs1xm16ocq01scs",
-      "title": "[OMOTF] Newsletter Tile",
+      "id": "mqjcjphtjt526zp077p",
+      "title": "[ADV Survey] Build Design Deck",
       "date": "2026-06-15",
-      "projectId": "mqj2kttl0yhx7uxdvszq",
       "order": 22
     },
     {
-      "id": "mqj9fzd9uo2rejuju4q",
-      "title": "[ADV Survey] Build Design Deck",
-      "date": "2026-06-15",
+      "id": "mqjcjttvr138lo6npee",
+      "title": "[EAI x ADV] IG Post 3",
+      "date": "2026-06-16",
+      "projectId": "mqjbzq71w0kh58p36el",
       "order": 23
     },
     {
-      "id": "mqj9j55zy64ghmlo7vs",
-      "title": "[EAI x ADV] IG Post 3",
+      "id": "mqjcjy4f8rbqb8i6xzs",
+      "title": "[EAI x ADV] LI Post 5",
       "date": "2026-06-16",
-      "projectId": "mqj2tv5kmkny05g7wxj",
+      "projectId": "mqjbzq71w0kh58p36el",
       "order": 24
     },
     {
-      "id": "mqj9jcd5u3znau4bfn",
-      "title": "[EAI x ADV] LI Post 5",
-      "date": "2026-06-16",
-      "projectId": "mqj2tv5kmkny05g7wxj",
+      "id": "mqjck1q7qjma3swrgkq",
+      "title": "[Pharma] LI Post 1",
+      "date": "2026-06-17",
+      "projectId": "mqjc7yok5wsh805ver6",
       "order": 25
     },
     {
-      "id": "mqj9jvftl6cexhaspfe",
-      "title": "[Pharma] LI Post 1",
+      "id": "mqjck5c6a3wvvwzad28",
+      "title": "Microsoft Marketing Weekly",
       "date": "2026-06-17",
-      "projectId": "mqj2mf3bx32wiy7qyi",
+      "projectId": "mqjbp8npoy216t0ob6",
       "order": 26
     },
     {
-      "id": "mqj9lxqim7o5b94by0p",
+      "id": "mqjckbl0k3ag1tdqyts",
       "title": "[ADV Web] AI Academy Page",
-      "date": "2026-06-18",
-      "projectId": "mqj2ke9metncs726ut7",
+      "date": "2026-06-19",
+      "projectId": "mqjbiqn35d5gh1a9oc6",
       "order": 27
     },
     {
-      "id": "mqj9mniem02ox9by85h",
+      "id": "mqjckfls22sxlk0nucc",
       "title": "[ADV Web] Careers Cosmetic Changes",
       "date": "2026-06-18",
-      "projectId": "mqj2ke9metncs726ut7",
+      "projectId": "mqjbiqn35d5gh1a9oc6",
       "order": 28
     },
     {
-      "id": "mqj9rmehsgmkgnvzqa",
+      "id": "mqjckjx7v5nkbr4d98o",
       "title": "[Pharma] Whitepaper - Revisions",
       "date": "2026-06-18",
-      "projectId": "mqj2mf3bx32wiy7qyi",
+      "projectId": "mqjc7yok5wsh805ver6",
       "order": 29
     },
     {
-      "id": "mqj9sxln40o0j1bz20k",
+      "id": "mqjckotnlf05dlto87",
       "title": "[Miro Partnership] Imagine if culture was your most scalable technology",
       "date": "2026-06-19",
-      "projectId": "mqj2mt55xd3pj9h68yg",
+      "projectId": "mqjc99tu3xnyv059ar2",
       "order": 30
     },
     {
-      "id": "mqj9tihde7ztwdcnbf6",
-      "title": "[AI CoE] Whitepaper Design",
+      "id": "mqjcm9fc2b42zujuu4q",
+      "title": "[AI CoE] Whitepaper",
       "date": "2026-06-22",
       "endDate": "2026-06-24",
-      "projectId": "mqj2n7dn1vok3jbx5o8",
-      "order": 31
-    },
-    {
-      "id": "mqj9tw7hydvhrrfrg3g",
-      "title": "[Miro Partnership] Stop Wasting AI on Emails The Productivity Gains Leaders Are Overlooking",
-      "date": "2026-06-23",
-      "endDate": "2026-06-26",
-      "projectId": "mqj2mt55xd3pj9h68yg",
-      "order": 33
-    },
-    {
-      "id": "mqj9uflt9d529ocsvv8",
-      "title": "[AI CoE] Playbook - Design",
-      "date": "2026-06-24",
-      "endDate": "2026-06-26",
-      "projectId": "mqj2n7dn1vok3jbx5o8",
+      "projectId": "mqjcm2906l5aycactzb",
       "order": 32
     },
     {
-      "id": "mqj9uuq1fsxzt9ktbic",
-      "title": "[Pharma] LI Post 2",
+      "id": "mqjcmhpwgtxt1u68c",
+      "title": "[Miro Partnership] Stop Wasting AI on Emails The Productivity Gains Leaders Are Overlooking",
       "date": "2026-06-25",
-      "projectId": "mqj2mf3bx32wiy7qyi",
+      "endDate": "2026-06-26",
+      "projectId": "mqjc99tu3xnyv059ar2",
+      "order": 33
+    },
+    {
+      "id": "mqjcms27y0f7a4lzde",
+      "title": "[AI CoE] Playbook",
+      "date": "2026-06-24",
+      "endDate": "2026-06-26",
+      "projectId": "mqjcm2906l5aycactzb",
       "order": 34
     },
     {
-      "id": "mqj9v15nlos76mqx1k",
-      "title": "[Pharma] IG Post 1",
+      "id": "mqjcmxpzvn7cayxiey",
+      "title": "[Pharma] LI Post 2",
       "date": "2026-06-25",
-      "projectId": "mqj2mf3bx32wiy7qyi",
+      "projectId": "mqjc7yok5wsh805ver6",
       "order": 35
     },
     {
-      "id": "mqj9v7svzfayzkqbw3",
-      "title": "MS Marketing Weekly",
+      "id": "mqjcn6aoj90nqhtgb1",
+      "title": "[Pharma] IG Post 1",
       "date": "2026-06-25",
-      "projectId": "mqj2l7d4wx6t6fmis3",
+      "projectId": "mqjc7yok5wsh805ver6",
       "order": 36
     },
     {
-      "id": "mqj9vjrpc2lc251hbf",
-      "title": "[Miro Partnership] Why 70% of your AI success has nothing to do with AI",
+      "id": "mqjcnbj0pk5hm4aw6nb",
+      "title": "MS Marketing Weekly",
       "date": "2026-06-26",
-      "projectId": "mqj2mt55xd3pj9h68yg",
-      "order": 37
-    },
-    {
-      "id": "mqj9wobr8etmirnne68",
-      "title": "EAI Pulse Podcast Episode",
-      "date": "2026-06-29",
-      "projectId": "mqj2da8vlliq6q4s79",
+      "projectId": "mqjbp8npoy216t0ob6",
       "order": 38
     },
     {
-      "id": "mqj9x2u93ywvjvhjiu7",
+      "id": "mqjcnpwacnxnt11ued9",
+      "title": "[Miro Partnership] Why 70% of your AI success has nothing to do with AI",
+      "date": "2026-06-29",
+      "projectId": "mqjc99tu3xnyv059ar2",
+      "order": 40
+    },
+    {
+      "id": "mqjcooiaqbky3btth8o",
+      "title": "EAI Pulse Podcast Episode",
+      "date": "2026-06-29",
+      "projectId": "mqjayn8d9vu8l4e812",
+      "order": 39
+    },
+    {
+      "id": "mqjcq9n0m9k9ini80ef",
+      "title": "[Miro Partnership] Designing the Operating Model of the Future for Sustainable Efficiency",
+      "date": "2026-07-03",
+      "projectId": "mqjc99tu3xnyv059ar2",
+      "order": 41
+    },
+    {
+      "id": "mqjcqh0fg1ywx6gcalj",
+      "title": "[Miro Partnership] Future-Ready Without Burnout",
+      "date": "2026-07-10",
+      "projectId": "mqjc99tu3xnyv059ar2",
+      "order": 42
+    },
+    {
+      "id": "mqjcqnmrz0ypkfckir",
+      "title": "[Miro Partnership - Stuck in Second Gear] Why Productivity Stalls Inside Larger Organizations",
+      "date": "2026-07-17",
+      "projectId": "mqjc99tu3xnyv059ar2",
+      "order": 43
+    },
+    {
+      "id": "mqjcquqaml08yrliup",
+      "title": "[Miro Partnership] Why AI Should Follow, Not Lead, Business Transformation",
+      "date": "2026-07-24",
+      "projectId": "mqjc99tu3xnyv059ar2",
+      "order": 44
+    },
+    {
+      "id": "mqjcr150bvnmtrm4k08",
+      "title": "[Miro Partnership] Why Change is the Transformation Not Just Part of It",
+      "date": "2026-07-29",
+      "projectId": "mqjc99tu3xnyv059ar2",
+      "order": 45
+    },
+    {
+      "id": "mqjesy9yb6qdhd0xed",
+      "title": "[Pharma] LI Post #3",
+      "date": "2026-07-02",
+      "projectId": "mqjc7yok5wsh805ver6",
+      "order": 46
+    },
+    {
+      "id": "mqjetf1cbdo2xbpa88f",
+      "title": "[Pharma] LI Post #4 - Newsletter",
+      "date": "2026-07-09",
+      "projectId": "mqjc7yok5wsh805ver6",
+      "order": 47
+    },
+    {
+      "id": "mqjetnf06qbconglui8",
+      "title": "[Pharma] IG Post #2",
+      "date": "2026-07-09",
+      "projectId": "mqjc7yok5wsh805ver6",
+      "order": 48
+    },
+    {
+      "id": "mqjetwd4ynxm5a8zgo",
+      "title": "[Pharma] LI Post #5",
+      "date": "2026-07-16",
+      "projectId": "mqjc7yok5wsh805ver6",
+      "order": 49
+    },
+    {
+      "id": "mqjeu4ryvmzi0duswwo",
+      "title": "[Pharma] LI Post #6",
+      "date": "2026-07-23",
+      "projectId": "mqjc7yok5wsh805ver6",
+      "order": 50
+    },
+    {
+      "id": "mqjeucoc02k5izvfcsjm",
+      "title": "[Pharma] IG Post #3",
+      "date": "2026-07-23",
+      "projectId": "mqjc7yok5wsh805ver6",
+      "order": 51
+    },
+    {
+      "id": "mqjeukrlxtq17vjy7it",
+      "title": "[Pharma] LI Post #7",
+      "date": "2026-07-30",
+      "projectId": "mqjc7yok5wsh805ver6",
+      "order": 52
+    },
+    {
+      "id": "mqjevma0rkrfi9y081",
       "title": "AI CoE - Week 2 - Socials Focus",
       "date": "2026-06-29",
       "endDate": "2026-07-03",
-      "projectId": "mqj2n7dn1vok3jbx5o8",
-      "order": 39
+      "projectId": "mqjcm2906l5aycactzb",
+      "order": 53
+    },
+    {
+      "id": "mqjf0hl1gehanfwj6k",
+      "title": "[Miro Partnership] Why 70% of your AI success has nothing to do with AI",
+      "date": "2026-06-26",
+      "projectId": "mqjc99tu3xnyv059ar2",
+      "order": 37
+    },
+    {
+      "id": "mqk5ekue795uxl1ht0l",
+      "title": "[Miro Partnership] Imagine if culture was your most scalable technology",
+      "date": "2026-06-22",
+      "projectId": "mqjc99tu3xnyv059ar2",
+      "order": 54
     }
   ],
   "projects": [
     {
-      "id": "mqj2da8vlliq6q4s79",
+      "id": "mqjayn8d9vu8l4e812",
       "name": "Podcast [EAI Pulse/The Backlog]",
-      "color": "#14b8a6"
-    },
-    {
-      "id": "mqj2ke9metncs726ut7",
-      "name": "ADV Website 2026",
       "color": "#3b82f6"
     },
     {
-      "id": "mqj2kttl0yhx7uxdvszq",
+      "id": "mqjbiqn35d5gh1a9oc6",
+      "name": "ADV Website 2026",
+      "color": "#1d9acc"
+    },
+    {
+      "id": "mqjblskrrovdclm7ai",
       "name": "Operating Model of the Future",
       "color": "#ef4444"
     },
     {
-      "id": "mqj2l7d4wx6t6fmis3",
-      "name": "Ad-Hoc Tile",
-      "color": "#85aaad"
+      "id": "mqjbp8npoy216t0ob6",
+      "name": "Ad-Hoc Tiles",
+      "color": "#94bcbc"
     },
     {
-      "id": "mqj2lzp4s5inkgz7tco",
+      "id": "mqjbzq71w0kh58p36el",
+      "name": "EAI x ADV Collaboration",
+      "color": "#327dcd"
+    },
+    {
+      "id": "mqjc6uluw5lr5ajp8cq",
       "name": "US Energy",
-      "color": "#f59e0b"
+      "color": "#f97316"
     },
     {
-      "id": "mqj2mf3bx32wiy7qyi",
+      "id": "mqjc7yok5wsh805ver6",
       "name": "Pharma",
       "color": "#ec4899"
     },
     {
-      "id": "mqj2mt55xd3pj9h68yg",
+      "id": "mqjc99tu3xnyv059ar2",
       "name": "Miro Partnership",
-      "color": "#f97316"
+      "color": "#f59e0b"
     },
     {
-      "id": "mqj2n7dn1vok3jbx5o8",
+      "id": "mqjcm2906l5aycactzb",
       "name": "AI Center of Excellence",
       "color": "#8b5cf6"
-    },
-    {
-      "id": "mqj2tv5kmkny05g7wxj",
-      "name": "EAI x ADV Collaboration",
-      "color": "#3b82f6"
-    },
-    {
-      "id": "mqj9g65gm1p31ll8vi",
-      "name": "Sample",
-      "color": "#ef4444"
     }
   ],
   "dayNotes": {
     "2026-06-30": "Send Timesheet",
-    "2026-06-15": "Send Timesheet"
+    "2026-06-15": "Send Timesheet",
+    "2026-07-01": "Work Anniversary!"
   }
 }
