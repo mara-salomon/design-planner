@@ -1795,7 +1795,12 @@ async function loadFromGitHub() {
     // Step 1: get the latest commit SHA for data.json.
     // Unique timestamp in URL guarantees a cache miss on GitHub's CDN every time.
     const commitsUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/commits?path=data.json&per_page=1&t=${Date.now()}`;
-    const commitsR = await fetch(commitsUrl, { headers, cache: 'no-store' });
+    let commitsR = await fetch(commitsUrl, { headers, cache: 'no-store' });
+    // If token is bad/expired, retry without it so viewers aren't blocked
+    if (!commitsR.ok && (commitsR.status === 401 || commitsR.status === 403) && cfg.token) {
+      delete headers['Authorization'];
+      commitsR = await fetch(commitsUrl, { headers, cache: 'no-store' });
+    }
     if (!commitsR.ok) throw new Error(`HTTP ${commitsR.status}`);
     const commits = await commitsR.json();
     if (!Array.isArray(commits) || !commits[0]) throw new Error('no commits found');
