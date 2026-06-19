@@ -485,7 +485,6 @@
     position: relative;
   }
   .view-lockable.is-locked > :not(.view-lock-overlay) {
-    filter: blur(7px) grayscale(0.6) opacity(0.7);
     pointer-events: none;
     user-select: none;
   }
@@ -1098,12 +1097,49 @@ function attachCellDrop(cell, ds) {
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
+function renderLockedCalendarGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const firstDay    = new Date(state.year, state.month, 1).getDay();
+  const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
+  const totalCells  = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  const numWeeks    = totalCells / 7;
+  for (let w = 0; w < numWeeks; w++) {
+    const weekEl = document.createElement('div');
+    weekEl.className = 'week-row';
+    for (let d = 0; d < 7; d++) {
+      const dayNum = w * 7 + d - firstDay + 1;
+      const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (inMonth ? '' : ' other-month');
+      const numEl = document.createElement('div');
+      numEl.className = 'cell-date';
+      numEl.textContent = inMonth ? dayNum : '';
+      cell.appendChild(numEl);
+      if (inMonth) {
+        const bar1 = document.createElement('div');
+        bar1.style.cssText = 'height:10px;border-radius:4px;background:#e2e8f0;margin:6px 4px 4px';
+        const bar2 = document.createElement('div');
+        bar2.style.cssText = 'height:10px;border-radius:4px;background:#e2e8f0;margin:4px 4px';
+        cell.appendChild(bar1);
+        cell.appendChild(bar2);
+      }
+      weekEl.appendChild(cell);
+    }
+    grid.appendChild(weekEl);
+  }
+}
+
 function render() {
   document.getElementById('monthLabel').textContent = fmtMonth(state.year, state.month);
 
+  if (!canEdit()) {
+    renderLockedCalendarGrid();
+    return;
+  }
+
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-
 
   const today = todayStr();
   const firstDay     = new Date(state.year, state.month, 1).getDay();
@@ -1953,6 +1989,16 @@ function renderListView() {
   const container = document.getElementById('listResults');
   container.innerHTML = '';
 
+  if (!canEdit()) {
+    const widths = ['60%','45%','70%','50%','65%','40%','55%'];
+    container.innerHTML = widths.map(w => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9">
+        <div style="width:12px;height:12px;border-radius:50%;background:#e2e8f0;flex-shrink:0"></div>
+        <div style="height:11px;border-radius:4px;background:#e2e8f0;width:${w}"></div>
+      </div>`).join('');
+    return;
+  }
+
   const today = todayStr();
 
   if (!state.events.length) {
@@ -2117,7 +2163,7 @@ function setView(v) {
   applyLockState();
   if (isOverview) renderOverviewView();
   else if (isList) renderListView();
-  else renderLegend();
+  else { render(); renderLegend(); }
 }
 
 // ── View buttons ─────────────────────────────────────────────────────────────
