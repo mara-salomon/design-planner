@@ -725,6 +725,13 @@
       "endDate": "2026-07-24",
       "projectId": "mqpvsdipn7kj7zvy5ln",
       "order": 100
+    },
+    {
+      "id": "mry6x23g6g498d6rtqu",
+      "title": "Doug ACS Article Tile",
+      "date": "2026-07-24",
+      "projectId": "mqjbp8npoy216t0ob6",
+      "order": 101
     }
   ],
   "projects": [
