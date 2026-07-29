@@ -248,7 +248,7 @@
       "title": "MS Marketing Weekly",
       "date": "2026-06-29",
       "projectId": "mqjbp8npoy216t0ob6",
-      "order": 69
+      "order": 58
     },
     {
       "id": "mqjcq9n0m9k9ini80ef",
@@ -365,7 +365,7 @@
       "date": "2026-07-16",
       "endDate": "2026-07-17",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 50
+      "order": 49
     },
     {
       "id": "mqpvxtrro261a0f2iz",
@@ -373,7 +373,7 @@
       "date": "2026-07-21",
       "endDate": "2026-07-24",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 53
+      "order": 50
     },
     {
       "id": "mqpvy4eayk2b6nr3jmm",
@@ -381,7 +381,7 @@
       "date": "2026-07-27",
       "endDate": "2026-07-29",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 54
+      "order": 51
     },
     {
       "id": "mqpw5a1orpiis2e9jbk",
@@ -389,7 +389,7 @@
       "date": "2026-07-29",
       "endDate": "2026-07-31",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 62
+      "order": 52
     },
     {
       "id": "mqpw5gapbqlh6csge9m",
@@ -397,7 +397,7 @@
       "date": "2026-08-03",
       "endDate": "2026-08-07",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 63
+      "order": 53
     },
     {
       "id": "mqpw5nadw16aasebrcr",
@@ -405,7 +405,7 @@
       "date": "2026-08-10",
       "endDate": "2026-08-14",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 64
+      "order": 54
     },
     {
       "id": "mqpw8m7m9yrteb9j5e6",
@@ -413,7 +413,7 @@
       "date": "2026-07-06",
       "endDate": "2026-07-06",
       "projectId": "mqjbp8npoy216t0ob6",
-      "order": 67
+      "order": 56
     },
     {
       "id": "mqpz3tbtg37bvnld4fh",
@@ -421,70 +421,70 @@
       "date": "2026-06-24",
       "endDate": "2026-06-26",
       "projectId": "mqjc99tu3xnyv059ar2",
-      "order": 65
+      "order": 55
     },
     {
       "id": "mqq4ozrlpa8oo6q9wvs",
       "title": "[OMOTF] LI Post 5",
       "date": "2026-06-23",
       "projectId": "mqjblskrrovdclm7ai",
-      "order": 68
+      "order": 57
     },
     {
       "id": "mquap5piio8tf2foemf",
       "title": "[EAI x ADV] Substack Tile",
       "date": "2026-06-26",
       "projectId": "mqjbzq71w0kh58p36el",
-      "order": 70
+      "order": 59
     },
     {
       "id": "mqyjfp68g7spjmtor8v",
       "title": "[Miro Partnership] Bridging the AI Implementation-Governance Gap",
       "date": "2026-06-30",
       "projectId": "mqjc99tu3xnyv059ar2",
-      "order": 71
+      "order": 60
     },
     {
       "id": "mqzw31c19vwpyun5mdg",
       "title": "[ADV Web] Alignment Notes",
       "date": "2026-07-01",
       "projectId": "mqjbiqn35d5gh1a9oc6",
-      "order": 72
+      "order": 61
     },
     {
       "id": "mr35oozm4y7xzpegfj4",
       "title": "[ADV Web] AI Academy Design Revision",
       "date": "2026-07-03",
       "projectId": "mqjbiqn35d5gh1a9oc6",
-      "order": 73
+      "order": 62
     },
     {
       "id": "mr8uesf4014z2j5m59ok",
       "title": "[Miro Partnership] Designing the Operating Model of the Future for Sustainable Efficiency",
       "date": "2026-07-06",
       "projectId": "mqjc99tu3xnyv059ar2",
-      "order": 74
+      "order": 63
     },
     {
       "id": "mra8akn1rgdeev0ni5",
       "title": "ADV x Wells Fargo Deck Cleanup",
       "date": "2026-07-07",
       "projectId": "mqjbp8npoy216t0ob6",
-      "order": 75
+      "order": 64
     },
     {
       "id": "mra8bi4wjgbp3azye2p",
       "title": "[Miro Partnership] \"Designing the Operating Model...\" - Revisions",
       "date": "2026-07-07",
       "projectId": "mqjc99tu3xnyv059ar2",
-      "order": 76
+      "order": 65
     },
     {
       "id": "mrbcr4vuu195ec1c7e",
       "title": "[AI CoE] Whitepaper & Playbook Revisions",
       "date": "2026-07-08",
       "projectId": "mqjcm2906l5aycactzb",
-      "order": 77
+      "order": 66
     },
     {
       "id": "mrbggleycbav5h62tzt",
@@ -492,182 +492,182 @@
       "date": "2026-07-10",
       "endDate": "2026-07-10",
       "projectId": "mqjbiqn35d5gh1a9oc6",
-      "order": 78
+      "order": 67
     },
     {
       "id": "mrc26p1exx14q7g2duc",
       "title": "[AI CoE] LI Post #1",
       "date": "2026-07-09",
       "projectId": "mqjcm2906l5aycactzb",
-      "order": 79
+      "order": 68
     },
     {
       "id": "mrc26z14rh1q2s7sc1p",
       "title": "[AI CoE] IG Post #1",
       "date": "2026-07-09",
       "projectId": "mqjcm2906l5aycactzb",
-      "order": 81
+      "order": 70
     },
     {
       "id": "mrc2884qi3gx042pnre",
       "title": "[AI CoE] LI Post #2",
       "date": "2026-07-10",
       "projectId": "mqjcm2906l5aycactzb",
-      "order": 80
+      "order": 69
     },
     {
       "id": "mrc28lo75xcwt2rqizq",
       "title": "[AI CoE] LI Post #3 - Newsletter",
       "date": "2026-07-30",
       "projectId": "mqjcm2906l5aycactzb",
-      "order": 82
+      "order": 71
     },
     {
       "id": "mrc28wg6jwqgg7gkfbl",
       "title": "[AI CoE] IG Post #2",
       "date": "2026-07-16",
       "projectId": "mqjcm2906l5aycactzb",
-      "order": 83
+      "order": 73
     },
     {
       "id": "mrc29ac6yl07kgwf1",
       "title": "[AI CoE] IG Post #3",
       "date": "2026-07-30",
       "projectId": "mqjcm2906l5aycactzb",
-      "order": 84
+      "order": 77
     },
     {
       "id": "mrc5nyfzeisevw5jr07",
       "title": "[Miro Partnership] Future-Ready Without Burnout",
       "date": "2026-07-08",
       "projectId": "mqjc99tu3xnyv059ar2",
-      "order": 85
+      "order": 80
     },
     {
       "id": "mrea4kdrakc9pk4aj0a",
       "title": "MS Marketing Weekly",
       "date": "2026-07-14",
       "projectId": "mqjbp8npoy216t0ob6",
-      "order": 86
+      "order": 83
     },
     {
       "id": "mrigiicln9tjjy4mw3q",
       "title": "[ADV Web] Additional UI Amendments",
       "date": "2026-07-13",
       "endDate": "2026-07-15",
-      "order": 87
+      "order": 85
     },
     {
       "id": "mru0d6bs12eookwl1zrf",
       "title": "[ADV Survey] LI Teaser Tile 1/3",
       "date": "2026-07-31",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 83
+      "order": 74
     },
     {
       "id": "mru0dzg42eybo84io79",
       "title": "[ADV Survey] LI Teaser Tile 2/3",
       "date": "2026-08-04",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 83
+      "order": 75
     },
     {
       "id": "mru0ehodhkgpz50g7fb",
       "title": "[ADV Survey] LI Teaser Tile 3/3",
       "date": "2026-08-05",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 84
+      "order": 78
     },
     {
       "id": "mru0fa8h2eslclbgtu5",
       "title": "[ADV Survey] IG Pre-launch Post",
       "date": "2026-08-05",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 85
+      "order": 81
     },
     {
       "id": "mru0gtze0ynoclcwjjkq",
       "title": "[ADV Survey] LI Touchpoint Tile 1/3",
       "date": "2026-08-10",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 82
+      "order": 72
     },
     {
       "id": "mru0h00nhnpeblv890g",
       "title": "[ADV Survey] LI Touchpoint Tile 2/3",
       "date": "2026-08-12",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 83
+      "order": 76
     },
     {
       "id": "mru0h4qhprd7piwg8of",
       "title": "[ADV Survey] LI Touchpoint Tile 3/3",
       "date": "2026-08-19",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 84
+      "order": 79
     },
     {
       "id": "mru0ii9i0ko76a9xsjg",
       "title": "[ADV Survey] IG LAUNCH Story: 78% hero stat",
       "date": "2026-08-10",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 85
+      "order": 82
     },
     {
       "id": "mru0jlc4lg662blprqp",
       "title": "[ADV Survey] IG LAUNCH Feed: 78% hero stat",
       "date": "2026-08-10",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 86
+      "order": 84
     },
     {
       "id": "mru0k1is6jl8g4s7mdx",
       "title": "[ADV Survey] IG Story: 61% existential-risk stat reveal",
       "date": "2026-08-11",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 87
+      "order": 86
     },
     {
       "id": "mru0kfbootohbq42cb",
       "title": "[ADV Survey] IG Feed: Top-3-findings carousel",
       "date": "2026-08-11",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 88
+      "order": 87
     },
     {
       "id": "mru0lbb51ghet75rtf2",
       "title": "[ADV Survey] IG Feed: “Did you know” carousel",
       "date": "2026-08-18",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 89
+      "order": 88
     },
     {
       "id": "mru0lx3iorsj2qtaulb",
       "title": "[ADV Survey] IG Story: 96%/20% consultants stat reveal",
       "date": "2026-08-18",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 90
+      "order": 89
     },
     {
       "id": "mru0n147kaq2u6bjnw8",
       "title": "[ADV Survey] LI Evergreen recycle",
       "date": "2026-08-26",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 91
+      "order": 90
     },
     {
       "id": "mru0ngwwm6kj58sadp",
       "title": "[ADV Survey] IG Feed: Evergreen recycle (88%)",
       "date": "2026-08-25",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 92
+      "order": 91
     },
     {
       "id": "mru0nrmb58crjyya9xr",
       "title": "[ADV Survey] IG Story: 88% evergreen stat reveal",
       "date": "2026-08-25",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 93
+      "order": 92
     },
     {
       "id": "mru0pz51mwf9i6feccf",
@@ -679,14 +679,14 @@
     {
       "id": "mru0rcd492zdlw8tirl",
       "title": "[ADV Survey] IG Feed: 82% gatekeepers",
-      "date": "2026-09-01",
+      "date": "2026-09-08",
       "projectId": "mqpvsdipn7kj7zvy5ln",
       "order": 94
     },
     {
       "id": "mru0rihqazth1h5t5df",
       "title": "[ADV Survey] IG Story: 82% gatekeepers",
-      "date": "2026-09-01",
+      "date": "2026-09-08",
       "projectId": "mqpvsdipn7kj7zvy5ln",
       "order": 95
     },
