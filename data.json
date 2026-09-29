@@ -1099,21 +1099,21 @@
       "title": "[ADV Survey] Industry Target Tile - Healthcare & Government",
       "date": "2026-09-29",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 150
+      "order": 151
     },
     {
       "id": "mudbv8wzxi8ly1ogn",
       "title": "Energy Whitepapers - Redesign",
       "date": "2026-09-22",
       "projectId": "mqjbp8npoy216t0ob6",
-      "order": 151
+      "order": 152
     },
     {
       "id": "muevcruoybfj8ol934",
       "title": "[ADV Web] Blog Insights Reformatting",
       "date": "2026-09-23",
       "projectId": "mqjbiqn35d5gh1a9oc6",
-      "order": 152
+      "order": 153
     },
     {
       "id": "mug8xd19yqjap3mu1ba",
@@ -1121,36 +1121,36 @@
       "date": "2026-09-24",
       "endDate": "2026-09-25",
       "projectId": "mu26uaq8w55g33r4lu",
-      "order": 153
+      "order": 154
     },
     {
       "id": "mug8xpy2xiig2u77ika",
       "title": "[EAI Product] Mini Brand Book - Revisions",
       "date": "2026-09-28",
       "projectId": "mu26uaq8w55g33r4lu",
-      "order": 154
+      "order": 155
     },
     {
       "id": "mulydhv2e5unjewahlt",
       "title": "[EAI Product] The Loop Email Design",
       "date": "2026-10-01",
       "projectId": "mu26uaq8w55g33r4lu",
-      "order": 155
+      "order": 156
     },
     {
       "id": "mulyfmw81heh2dxoyzz",
       "title": "[EAI Product] Why I'm Building This - Clip",
       "date": "2026-10-02",
       "projectId": "mu26uaq8w55g33r4lu",
-      "order": 156
+      "order": 157
     },
     {
       "id": "mulygtda9ua7k3yljo5",
       "title": "[EAI Product] Something's Coming - Tile",
-      "date": "2026-09-30",
-      "endDate": "2026-10-01",
+      "date": "2026-09-29",
+      "endDate": "2026-09-30",
       "projectId": "mu26uaq8w55g33r4lu",
-      "order": 157
+      "order": 150
     }
   ],
   "projects": [
