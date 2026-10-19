@@ -1279,7 +1279,7 @@
       "date": "2026-10-27",
       "endDate": "2026-10-28",
       "projectId": "mqjbp8npoy216t0ob6",
-      "order": 176
+      "order": 177
     },
     {
       "id": "mvani6b66d9jx1cj078",
@@ -1287,14 +1287,14 @@
       "date": "2026-10-29",
       "endDate": "2026-10-30",
       "projectId": "mqjbp8npoy216t0ob6",
-      "order": 177
+      "order": 178
     },
     {
       "id": "mvehf7cpnczubqangvl",
       "title": "[ADV Web] Blog Insights Reformatting",
       "date": "2026-10-16",
       "projectId": "mqjbiqn35d5gh1a9oc6",
-      "order": 178
+      "order": 179
     },
     {
       "id": "mvehgcld6smfarwfa7f",
@@ -1308,28 +1308,28 @@
       "title": "[EAI Product] Curriculum Assets - Revisions",
       "date": "2026-10-19",
       "projectId": "mu26uaq8w55g33r4lu",
-      "order": 179
+      "order": 180
     },
     {
       "id": "mvfwt3iz4x1qoofc50k",
       "title": "[ADV Survey] LI Tile: 82% say gatekeepers are slowing AI rollouts",
       "date": "2026-10-30",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 180
+      "order": 181
     },
     {
       "id": "mvfwt7jdt7rm2itesch",
       "title": "[ADV Survey] IG Feed: 82% say gatekeepers are slowing AI rollouts",
       "date": "2026-10-30",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 181
+      "order": 182
     },
     {
       "id": "mvfwtbmg3vl318wl5nl",
       "title": "[ADV Survey] IG Story: gatekeepers poll engagement + link CTA",
       "date": "2026-10-30",
       "projectId": "mqpvsdipn7kj7zvy5ln",
-      "order": 182
+      "order": 183
     },
     {
       "id": "mvfwx0oi5nc3yno3zhj",
@@ -1337,7 +1337,7 @@
       "date": "2026-10-27",
       "endDate": "2026-10-30",
       "projectId": "mvang6s29ljzilpztx",
-      "order": 183
+      "order": 176
     }
   ],
   "projects": [
