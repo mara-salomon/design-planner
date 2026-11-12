@@ -1468,6 +1468,14 @@
       "projectId": "mqjbp8npoy216t0ob6",
       "notes": "Form: https://forms.cloud.microsoft/r/0EXQwp7D9p",
       "order": 200
+    },
+    {
+      "id": "mwcv2cape2t0yu2dnp",
+      "title": "[Anna Playbook] Design",
+      "date": "2026-11-16",
+      "endDate": "2026-11-19",
+      "projectId": "mqjbp8npoy216t0ob6",
+      "order": 201
     }
   ],
   "projects": [
